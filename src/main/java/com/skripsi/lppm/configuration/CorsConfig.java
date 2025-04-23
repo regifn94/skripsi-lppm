@@ -12,8 +12,11 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*")
-                        .allowedMethods("*").allowedHeaders("*");
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173") // Use exact origins
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);  // If you're sending cookies or authentication headers
             }
         };
     }

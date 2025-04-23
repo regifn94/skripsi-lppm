@@ -1,5 +1,6 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,10 @@ public class User {
     private String username;
     @Column(unique = true)
     private String email;
+
+    private String userType;
+
+    @JsonIgnore
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -26,4 +31,10 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Dosen dosen;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Students student;
 }
