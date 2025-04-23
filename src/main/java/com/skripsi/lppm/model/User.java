@@ -1,6 +1,8 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +35,10 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference("user-dosen")
     private Dosen dosen;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference("user-student")
     private Students student;
 }

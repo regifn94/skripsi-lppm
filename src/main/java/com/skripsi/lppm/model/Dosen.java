@@ -30,5 +30,10 @@ public class Dosen {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonBackReference("user-dosen")
     private User user;
+
+//    @ManyToOne
+//    @JsonBackReference
+//    private Proposal proposal;
 }

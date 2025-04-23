@@ -1,5 +1,7 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.skripsi.lppm.model.enums.StatusPenelitian;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,16 +32,23 @@ public class Proposal {
     private String namaMitra;
     private String alamatMitra;
     private String picMitra;
+
     private String status;
 
     @OneToOne(cascade = CascadeType.ALL)
     private User ketuaPeneliti;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<Dosen> anggotaDosen= new ArrayList<>();
+    @JsonManagedReference
+    private List<Dosen> anggotaDosen = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Students> anggotaMahasiswa = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<ProposalMember> proposalMember = new ArrayList<>();
 
     @Transient
     private String fileBase64;

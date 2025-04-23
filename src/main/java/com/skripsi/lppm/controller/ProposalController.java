@@ -1,5 +1,7 @@
 package com.skripsi.lppm.controller;
 
+import com.skripsi.lppm.dto.ProposalDTO;
+import com.skripsi.lppm.dto.StatusUpdateDTO;
 import com.skripsi.lppm.model.Proposal;
 import com.skripsi.lppm.service.ProposalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,46 @@ public class ProposalController {
     @Autowired
     private ProposalService proposalService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Proposal> submitProposal(@RequestBody Proposal proposal, @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(proposalService.submitProposalWithFile(proposal, file));
+    @PostMapping(path = "/submit",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Proposal> submitProposalWithFile(@RequestPart("proposal") ProposalDTO proposal,
+                                                   @RequestPart("file") MultipartFile file) {
+        Proposal saved = proposalService.submitProposalWithFile(proposal, file, true);
+        return ResponseEntity.ok(saved);
     }
+
+//    @PostMapping("/without-file")
+//    public ResponseEntity<?> submitWithoutFile(@RequestBody ProposalDTO proposal){
+//        var save = proposalService.submitProposalWithoutFile(proposal);
+//        return ResponseEntity.ok(save);
+//    }
+
+    @PutMapping("/proposals/{id}/status")
+    public ResponseEntity<Proposal> updateStatus(@PathVariable Long id,
+                                                 @RequestBody StatusUpdateDTO statusDTO) {
+        Proposal updated = proposalService.updateProposalStatus(id, statusDTO.getStatus(), statusDTO.getReason());
+        return ResponseEntity.ok(updated);
+    }
+
 
     @GetMapping
     public ResponseEntity<List<Proposal>> getAllProposals() {
         return ResponseEntity.ok(proposalService.getAllProposals());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProposal(@PathVariable("id") Long id){
+        return ResponseEntity.ok(proposalService.deleteProposal(id));
+    }
+
+    @PostMapping("/{proposalId}/approve-member/{userId}")
+    public ResponseEntity<?> approveSebagaiAnggota(@PathVariable Long proposalId, @PathVariable Long userId) {
+        proposalService.approvedMembers(proposalId, userId);
+        return ResponseEntity.ok("Berhasil approve sebagai anggota proposal.");
+    }
+
+    @PostMapping("/{proposalId}/reject-member/{userId}")
+    public ResponseEntity<?> rejectSebagaiAnggota(@PathVariable Long proposalId, @PathVariable Long userId) {
+        proposalService.rejectedMembers(proposalId, userId);
+        return ResponseEntity.ok("Berhasil menolak sebagai anggota proposal.");
     }
 }

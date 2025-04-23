@@ -1,7 +1,11 @@
 package com.skripsi.lppm.service;
 
-import com.skripsi.lppm.model.Proposal;
-import com.skripsi.lppm.repository.ProposalRepository;
+import com.skripsi.lppm.dto.ProposalDTO;
+import com.skripsi.lppm.model.*;
+import com.skripsi.lppm.model.enums.StatusApproval;
+import com.skripsi.lppm.model.enums.StatusPenelitian;
+import com.skripsi.lppm.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,44 +17,205 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ProposalService {
 
+    private final UserRepository userRepository;
     private final ProposalRepository proposalRepository;
+    private final NotificationRepository notificationRepository;
+    private final DosenRepository dosenRepository;
+    private final StudentRepository studentRepository;
+    private final FinalReportRepository finalReportRepository;
+    private final ProposalMemberRepository proposalMemberRepository;
 
     public Proposal submitProposal(Proposal proposal) {
         return proposalRepository.save(proposal);
     }
 
-    public Proposal submitProposalWithFile(Proposal proposal, MultipartFile file) {
-        try {
-            // Rename file sesuai judul proposal (replace spasi dengan _ dan lowercase)
-            String originalFileName = file.getOriginalFilename();
-            String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            String sanitizedTitle = proposal.getJudul().toLowerCase().replaceAll("\\s+", "_");
-            String newFileName = sanitizedTitle + extension;
+    public Proposal submitProposalWithFile(ProposalDTO proposalDTO, MultipartFile multipartFile, Boolean bool) {
+        // Simpan file
+        String fileUrl = "";
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            try {
+                String basePath = System.getProperty("user.dir"); // atau bisa juga pakai konfigurasi application.properties
+                String folderPath = basePath + File.separator + "uploads" + File.separator + "proposals";
 
-            // Simpan ke folder lokal (misal: uploads/)
-            String uploadDir = "uploads/";
-            File directory = new File(uploadDir);
-            if (!directory.exists()) directory.mkdirs();
+                File folder = new File(folderPath);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
 
-            Path filePath = Paths.get(uploadDir + newFileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                String fileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
+                File file = new File(folder, fileName);
+                multipartFile.transferTo(file);
 
-            // Simpan URL/nama file ke entitas proposal
-            proposal.setFileUrl(filePath.toString());
-
-            return proposalRepository.save(proposal);
-        } catch (IOException e) {
-            throw new RuntimeException("File upload failed: " + e.getMessage());
+                fileUrl = file.getAbsolutePath();
+            } catch (IOException e) {
+                throw new RuntimeException("Gagal menyimpan file proposal", e);
+            }
         }
+
+        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti()).orElseThrow(() -> new RuntimeException("User not found"));
+        User createdBy = userRepository.findById(proposalDTO.getKetuaPeneliti()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        var dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
+        var studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+        List<Long> id = new ArrayList<>();
+        for(var d : dosenList){
+            id.add(d.getId());
+        }
+        for(var s : studentList){
+            id.add(s.getId());
+        }
+        var userList = userRepository.findAllByUserIdIn(id);
+        ProposalMember proposalMember = new ProposalMember();
+
+
+        Proposal proposal = new Proposal();
+        proposal.setJudul(proposalDTO.getJudul());
+        proposal.setWaktuPelaksanaan(proposalDTO.getWaktuPelaksanaan());
+        proposal.setSumberDana(proposalDTO.getSumberDana());
+        proposal.setDanaYangDiUsulkan(proposalDTO.getDanaYangDiUsulkan());
+        proposal.setLuaranPenelitian(proposalDTO.getLuaranPenelitian());
+        proposal.setNamaMitra(proposalDTO.getNamaMitra());
+        proposal.setAlamatMitra(proposalDTO.getAlamatMitra());
+        proposal.setPicMitra(proposalDTO.getPicMitra());
+        proposal.setStatus(StatusPenelitian.DRAFT.toString());
+        proposal.setKetuaPeneliti(ketuaPeneliti);
+        proposal.setFileUrl(fileUrl);
+        proposal.setCreatedBy(createdBy);
+
+        // Simpan proposal ke database
+        Proposal savedProposal = proposalRepository.save(proposal);
+
+        // Notifikasi untuk ketua peneliti
+        sendNotification(proposal.getKetuaPeneliti(), "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+
+        for (Dosen dosen : proposal.getAnggotaDosen()) {
+            if (dosen.getUser() != null) {
+                sendNotification(dosen.getUser(), "Anda ditambahkan sebagai anggota dosen dalam proposal: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+            }
+        }
+
+        for (Students student : proposal.getAnggotaMahasiswa()) {
+            if (student.getUser() != null) {
+                sendNotification(student.getUser(), "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+            }
+        }
+
+        return savedProposal;
+    }
+
+    @Transactional
+    public Proposal updateProposalStatus(Long proposalId, StatusPenelitian status, String reason) {
+        Proposal proposal = proposalRepository.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Proposal not found"));
+
+        proposal.setStatus(status.toString());
+        Proposal updatedProposal = proposalRepository.save(proposal);
+
+        sendNotification(proposal.getKetuaPeneliti(),
+                "Proposal Anda \"" + proposal.getJudul() + "\" telah " + (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK") +
+                        (reason != null ? ". Alasan: " + reason : ""), "Proposal", proposalId);
+
+        for (Dosen dosen : proposal.getAnggotaDosen()) {
+            if (dosen.getUser() != null) {
+                sendNotification(dosen.getUser(),
+                        "Proposal yang Anda ikuti \"" + proposal.getJudul() + "\" telah " +
+                                (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK"),"Proposal", proposalId);
+            }
+        }
+
+        for (Students student : proposal.getAnggotaMahasiswa()) {
+            if (student.getUser() != null) {
+                sendNotification(student.getUser(),
+                        "Proposal yang Anda ikuti \"" + proposal.getJudul() + "\" telah " +
+                                (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK"), "Proposal", proposalId);
+            }
+        }
+
+        return updatedProposal;
+    }
+
+    public void approvedMembers(Long proposalId, Long userId) {
+        ProposalMember member = proposalMemberRepository.findByProposalIdAndUserId(proposalId, userId)
+                .orElseThrow(() -> new RuntimeException("Anggota tidak ditemukan"));
+
+        member.setStatus(StatusApproval.APPROVED);
+        proposalMemberRepository.save(member);
+
+        List<ProposalMember> semuaAnggota = proposalMemberRepository.findByProposalId(proposalId);
+        boolean semuaSetuju = semuaAnggota.stream()
+                .allMatch(a -> a.getStatus() == StatusApproval.APPROVED);
+
+        if (semuaSetuju) {
+            Proposal proposal = member.getProposal();
+
+            // Notifikasi ke Ketua Peneliti
+            sendNotification(proposal.getKetuaPeneliti(),
+                    "Semua anggota telah menyetujui. Proposal akan dikirim ke Ketua Penelitian Fakultas.",
+                    "Proposal", proposal.getId());
+
+            // Notifikasi ke semua Ketua Penelitian Fakultas
+            List<User> ketuaPenelitianFakultasList = userRepository.findAllByRoleName("KETUA_PENELITIAN_FAKULTAS");
+            for (User ketua : ketuaPenelitianFakultasList) {
+                sendNotification(ketua,
+                        "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
+                        "Proposal", proposal.getId());
+            }
+
+            // Update status proposal
+            proposal.setStatus(StatusPenelitian.SUBMITTED.toString());
+            proposalRepository.save(proposal);
+        }
+    }
+
+    public void rejectedMembers(Long proposalId, Long userId) {
+        ProposalMember member = proposalMemberRepository.findByProposalIdAndUserId(proposalId, userId)
+                .orElseThrow(() -> new RuntimeException("Anggota tidak ditemukan"));
+
+        member.setStatus(StatusApproval.REJECTED);
+        proposalMemberRepository.save(member);
+
+        Proposal proposal = member.getProposal();
+
+        sendNotification(proposal.getKetuaPeneliti(),
+                "Salah satu anggota menolak bergabung. Proposal pending. Silakan pilih anggota baru.",
+                "Proposal", proposal.getId());
+    }
+
+    private void sendNotification(User user, String message, String proposal, Long proposalId) {
+        if (user == null) return;
+
+        Notification notification = Notification.builder()
+                .user(user)
+                .message(message)
+                .isRead(false)
+                .relatedModel(proposal)
+                .relatedId(proposalId)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
     }
 
     public List<Proposal> getAllProposals() {
         return proposalRepository.findAll();
+    }
+
+    public Boolean deleteProposal(Long id){
+        try {
+            finalReportRepository.deleteByProposalId(id);
+            proposalRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
