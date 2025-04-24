@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -41,4 +43,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference("user-student")
     private Students student;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "ketuaPeneliti")
+    private List<Proposal> proposals = new ArrayList<>();
 }

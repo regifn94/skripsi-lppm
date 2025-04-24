@@ -34,18 +34,34 @@ public class ProposalService {
     private final FinalReportRepository finalReportRepository;
     private final ProposalMemberRepository proposalMemberRepository;
 
-    public Proposal submitProposal(Proposal proposal) {
-        return proposalRepository.save(proposal);
-    }
-
-    public Proposal submitProposalWithFile(ProposalDTO proposalDTO, MultipartFile multipartFile, Boolean bool) {
-        // Simpan file
+    public String uploadFile(MultipartFile multipartFile){
         String fileUrl = "";
         if (multipartFile != null && !multipartFile.isEmpty()) {
             try {
-                String basePath = System.getProperty("user.dir"); // atau bisa juga pakai konfigurasi application.properties
+                String basePath = System.getProperty("user.dir");
                 String folderPath = basePath + File.separator + "uploads" + File.separator + "proposals";
+                File folder = new File(folderPath);
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
 
+                String fileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
+                File file = new File(folder, fileName);
+                multipartFile.transferTo(file);
+
+                fileUrl = file.getAbsolutePath();
+            } catch (IOException e) {
+                throw new RuntimeException("Gagal menyimpan file proposal", e);
+            }
+        }
+        return fileUrl;
+    }
+    public Proposal submitProposalWithFile(ProposalDTO proposalDTO, MultipartFile multipartFile, Boolean bool) {
+        String fileUrl = "";
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            try {
+                String basePath = System.getProperty("user.dir");
+                String folderPath = basePath + File.separator + "uploads" + File.separator + "proposals";
                 File folder = new File(folderPath);
                 if (!folder.exists()) {
                     folder.mkdirs();
@@ -61,21 +77,8 @@ public class ProposalService {
             }
         }
 
-        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti()).orElseThrow(() -> new RuntimeException("User not found"));
-        User createdBy = userRepository.findById(proposalDTO.getKetuaPeneliti()).orElseThrow(() -> new RuntimeException("User not found"));
-
-        var dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
-        var studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
-        List<Long> id = new ArrayList<>();
-        for(var d : dosenList){
-            id.add(d.getId());
-        }
-        for(var s : studentList){
-            id.add(s.getId());
-        }
-        var userList = userRepository.findAllByUserIdIn(id);
-        ProposalMember proposalMember = new ProposalMember();
-
+        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti())
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
 
         Proposal proposal = new Proposal();
         proposal.setJudul(proposalDTO.getJudul());
@@ -89,28 +92,53 @@ public class ProposalService {
         proposal.setStatus(StatusPenelitian.DRAFT.toString());
         proposal.setKetuaPeneliti(ketuaPeneliti);
         proposal.setFileUrl(fileUrl);
-        proposal.setCreatedBy(createdBy);
+        proposal.setCreatedBy(ketuaPeneliti);
 
-        // Simpan proposal ke database
         Proposal savedProposal = proposalRepository.save(proposal);
 
-        // Notifikasi untuk ketua peneliti
-        sendNotification(proposal.getKetuaPeneliti(), "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+        sendNotification(ketuaPeneliti,
+                "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
+                "Proposal", savedProposal.getId());
 
-        for (Dosen dosen : proposal.getAnggotaDosen()) {
+        List<ProposalMember> members = new ArrayList<>();
+
+        // Dosen
+        List<Dosen> dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
+        for (Dosen dosen : dosenList) {
             if (dosen.getUser() != null) {
-                sendNotification(dosen.getUser(), "Anda ditambahkan sebagai anggota dosen dalam proposal: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+                ProposalMember member = new ProposalMember();
+                member.setProposal(savedProposal);
+                member.setUser(dosen.getUser());
+                member.setIsMahasiswa(false);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(dosen.getUser(),
+                        "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
+                        "Proposal", savedProposal.getId());
             }
         }
 
-        for (Students student : proposal.getAnggotaMahasiswa()) {
+        List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+        for (Students student : studentList) {
             if (student.getUser() != null) {
-                sendNotification(student.getUser(), "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + proposal.getJudul(), "Proposal", savedProposal.getId());
+                ProposalMember member = new ProposalMember();
+                member.setProposal(savedProposal);
+                member.setUser(student.getUser());
+                member.setIsMahasiswa(true);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(student.getUser(),
+                        "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
+                        "Proposal", savedProposal.getId());
             }
         }
 
+        proposalMemberRepository.saveAll(members);
         return savedProposal;
     }
+
 
     @Transactional
     public Proposal updateProposalStatus(Long proposalId, StatusPenelitian status, String reason) {
@@ -163,7 +191,7 @@ public class ProposalService {
                     "Proposal", proposal.getId());
 
             // Notifikasi ke semua Ketua Penelitian Fakultas
-            List<User> ketuaPenelitianFakultasList = userRepository.findAllByRoleName("KETUA_PENELITIAN_FAKULTAS");
+            List<User> ketuaPenelitianFakultasList = userRepository.findByRoles_Name("KETUA_PENELITIAN_FAKULTAS");
             for (User ketua : ketuaPenelitianFakultasList) {
                 sendNotification(ketua,
                         "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
@@ -218,4 +246,135 @@ public class ProposalService {
             return false;
         }
     }
+
+    public Object submitProposalWithoutFile(ProposalDTO proposalDTO) {
+        String fileUrl = "";
+
+        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti())
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+
+        Proposal proposal = new Proposal();
+        proposal.setJudul(proposalDTO.getJudul());
+        proposal.setWaktuPelaksanaan(proposalDTO.getWaktuPelaksanaan());
+        proposal.setSumberDana(proposalDTO.getSumberDana());
+        proposal.setDanaYangDiUsulkan(proposalDTO.getDanaYangDiUsulkan());
+        proposal.setLuaranPenelitian(proposalDTO.getLuaranPenelitian());
+        proposal.setNamaMitra(proposalDTO.getNamaMitra());
+        proposal.setAlamatMitra(proposalDTO.getAlamatMitra());
+        proposal.setPicMitra(proposalDTO.getPicMitra());
+        proposal.setStatus(StatusPenelitian.DRAFT.toString());
+        proposal.setKetuaPeneliti(ketuaPeneliti);
+        proposal.setFileUrl(fileUrl);
+        proposal.setCreatedBy(ketuaPeneliti);
+
+        Proposal savedProposal = proposalRepository.save(proposal);
+
+        sendNotification(ketuaPeneliti,
+                "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
+                "Proposal", savedProposal.getId());
+
+        List<ProposalMember> members = new ArrayList<>();
+
+        // Dosen
+        List<Dosen> dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
+        for (Dosen dosen : dosenList) {
+            if (dosen.getUser() != null) {
+                ProposalMember member = new ProposalMember();
+                member.setProposal(savedProposal);
+                member.setUser(dosen.getUser());
+                member.setIsMahasiswa(false);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(dosen.getUser(),
+                        "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
+                        "Proposal", savedProposal.getId());
+            }
+        }
+
+        List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+        for (Students student : studentList) {
+            if (student.getUser() != null) {
+                ProposalMember member = new ProposalMember();
+                member.setProposal(savedProposal);
+                member.setUser(student.getUser());
+                member.setIsMahasiswa(true);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(student.getUser(),
+                        "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
+                        "Proposal", savedProposal.getId());
+            }
+        }
+
+        proposalMemberRepository.saveAll(members);
+        return savedProposal;
+    }
+
+
+    public Object updateProposalWithoutFile(Long proposalId, ProposalDTO proposalDTO) {
+        Proposal proposal = proposalRepository.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
+
+        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti())
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+
+        proposal.setJudul(proposalDTO.getJudul());
+        proposal.setWaktuPelaksanaan(proposalDTO.getWaktuPelaksanaan());
+        proposal.setSumberDana(proposalDTO.getSumberDana());
+        proposal.setDanaYangDiUsulkan(proposalDTO.getDanaYangDiUsulkan());
+        proposal.setLuaranPenelitian(proposalDTO.getLuaranPenelitian());
+        proposal.setNamaMitra(proposalDTO.getNamaMitra());
+        proposal.setAlamatMitra(proposalDTO.getAlamatMitra());
+        proposal.setPicMitra(proposalDTO.getPicMitra());
+        proposal.setKetuaPeneliti(ketuaPeneliti);
+        proposal.setCreatedBy(ketuaPeneliti);
+        proposal.setStatus(StatusPenelitian.DRAFT.toString()); // bisa disesuaikan status jika perlu
+
+        Proposal updatedProposal = proposalRepository.save(proposal);
+
+        // Hapus semua anggota lama
+        proposalMemberRepository.deleteAllByProposalId(proposalId);
+
+        List<ProposalMember> members = new ArrayList<>();
+
+        // Tambahkan ulang anggota dosen
+        List<Dosen> dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
+        for (Dosen dosen : dosenList) {
+            if (dosen.getUser() != null) {
+                ProposalMember member = new ProposalMember();
+                member.setProposal(updatedProposal);
+                member.setUser(dosen.getUser());
+                member.setIsMahasiswa(false);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(dosen.getUser(),
+                        "Anda ditambahkan sebagai anggota dosen dalam proposal (update): " + updatedProposal.getJudul(),
+                        "Proposal", updatedProposal.getId());
+            }
+        }
+
+        // Tambahkan ulang anggota mahasiswa
+        List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+        for (Students student : studentList) {
+            if (student.getUser() != null) {
+                ProposalMember member = new ProposalMember();
+                member.setProposal(updatedProposal);
+                member.setUser(student.getUser());
+                member.setIsMahasiswa(true);
+                member.setStatus(StatusApproval.PENDING);
+                members.add(member);
+
+                sendNotification(student.getUser(),
+                        "Anda ditambahkan sebagai anggota mahasiswa dalam proposal (update): " + updatedProposal.getJudul(),
+                        "Proposal", updatedProposal.getId());
+            }
+        }
+
+        proposalMemberRepository.saveAll(members);
+        return updatedProposal;
+    }
+
 }

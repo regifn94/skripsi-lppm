@@ -25,11 +25,17 @@ public class ProposalController {
         return ResponseEntity.ok(saved);
     }
 
-//    @PostMapping("/without-file")
-//    public ResponseEntity<?> submitWithoutFile(@RequestBody ProposalDTO proposal){
-//        var save = proposalService.submitProposalWithoutFile(proposal);
-//        return ResponseEntity.ok(save);
-//    }
+    @PostMapping("/without-file")
+    public ResponseEntity<?> submitWithoutFile(@RequestBody ProposalDTO proposal){
+        var save = proposalService.submitProposalWithoutFile(proposal);
+        return ResponseEntity.ok(save);
+    }
+
+    @PostMapping("/upload-file")
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file){
+        var upload = proposalService.uploadFile(file);
+        return ResponseEntity.ok(upload);
+    }
 
     @PutMapping("/proposals/{id}/status")
     public ResponseEntity<Proposal> updateStatus(@PathVariable Long id,
@@ -47,6 +53,12 @@ public class ProposalController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProposal(@PathVariable("id") Long id){
         return ResponseEntity.ok(proposalService.deleteProposal(id));
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateProposalWithoutFile(@PathVariable Long id, @RequestBody ProposalDTO proposalDTO) {
+        Object response = proposalService.updateProposalWithoutFile(id, proposalDTO);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{proposalId}/approve-member/{userId}")

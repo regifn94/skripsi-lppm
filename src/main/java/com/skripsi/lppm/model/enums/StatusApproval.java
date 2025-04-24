@@ -1,5 +1,5 @@
 package com.skripsi.lppm.model.enums;
 
 public enum StatusApproval {
-    PENDING, APPROVED, REJECTED
+    PENDING, APPROVED, ACCEPTED, REJECTED
 }

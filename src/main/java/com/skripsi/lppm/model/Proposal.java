@@ -35,7 +35,8 @@ public class Proposal {
 
     private String status;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
+    @JoinColumn(name = "ketua_peneliti_id", nullable = false)
     private User ketuaPeneliti;
 
     @OneToMany(cascade = CascadeType.ALL)
