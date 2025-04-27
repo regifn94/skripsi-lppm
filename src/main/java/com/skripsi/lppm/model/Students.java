@@ -29,9 +29,9 @@ public class Students {
     @JoinColumn(name = "faculty_id", nullable = false)
     private Faculty faculty;
 
-    @ManyToOne
-    @JoinColumn(name = "program_study_id", nullable = false)
-    private ProgramStudy programStudy;
+//    @ManyToOne
+//    @JoinColumn(name = "program_study_id", nullable = false)
+//    private ProgramStudy programStudy;
 
     @OneToOne
     @JoinColumn(name = "user_id")

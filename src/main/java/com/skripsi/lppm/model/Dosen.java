@@ -23,9 +23,9 @@ public class Dosen {
     private String nik;
     private String functionalPosition;
 
-    @JsonManagedReference
     @ManyToOne
     @JoinColumn(name = "faculty_id", nullable = false)
+    @JsonBackReference
     private Faculty faculty;
 
     @OneToOne

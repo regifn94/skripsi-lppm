@@ -29,7 +29,7 @@ public class ProgramStudyService {
     public ProgramStudy updateProgramStudy(Long id, ProgramStudy updatedProgramStudy) {
         ProgramStudy existing = getProgramStudyById(id);
         existing.setProdiName(updatedProgramStudy.getProdiName());
-        existing.setFaculty(updatedProgramStudy.getFaculty());
+//        existing.setFaculty(updatedProgramStudy.getFaculty());
         return programStudyRepository.save(existing);
     }
 

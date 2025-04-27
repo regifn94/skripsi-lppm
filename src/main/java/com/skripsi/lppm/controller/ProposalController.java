@@ -31,8 +31,8 @@ public class ProposalController {
         return ResponseEntity.ok(save);
     }
 
-    @PostMapping("/upload-file")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file){
+    @PostMapping(path = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(@RequestPart("file") MultipartFile file) {
         var upload = proposalService.uploadFile(file);
         return ResponseEntity.ok(upload);
     }

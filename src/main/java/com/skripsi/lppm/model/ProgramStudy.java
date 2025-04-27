@@ -15,8 +15,8 @@ public class ProgramStudy {
     private String prodiName;
 
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name = "faculty_id", nullable = false)
-    private Faculty faculty;
+//    @JsonBackReference
+//    @ManyToOne
+//    @JoinColumn(name = "faculty_id", nullable = false)
+//    private Faculty faculty;
 }

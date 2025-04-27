@@ -248,68 +248,71 @@ public class ProposalService {
     }
 
     public Object submitProposalWithoutFile(ProposalDTO proposalDTO) {
-        String fileUrl = "";
+        try {
+            var ketua = dosenRepository.findById(proposalDTO.getKetuaPeneliti());
+            User ketuaPeneliti = userRepository.findById(ketua.get().getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
 
-        User ketuaPeneliti = userRepository.findById(proposalDTO.getKetuaPeneliti())
-                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+            Proposal proposal = new Proposal();
+            proposal.setJudul(proposalDTO.getJudul());
+            proposal.setWaktuPelaksanaan(proposalDTO.getWaktuPelaksanaan());
+            proposal.setSumberDana(proposalDTO.getSumberDana());
+            proposal.setDanaYangDiUsulkan(proposalDTO.getDanaYangDiUsulkan());
+            proposal.setLuaranPenelitian(proposalDTO.getLuaranPenelitian());
+            proposal.setNamaMitra(proposalDTO.getNamaMitra());
+            proposal.setAlamatMitra(proposalDTO.getAlamatMitra());
+            proposal.setPicMitra(proposalDTO.getPicMitra());
+            proposal.setStatus(StatusPenelitian.DRAFT.toString());
+            proposal.setKetuaPeneliti(ketuaPeneliti);
+            proposal.setFileUrl(proposalDTO.getFileUrl());
+            proposal.setCreatedBy(ketuaPeneliti);
 
-        Proposal proposal = new Proposal();
-        proposal.setJudul(proposalDTO.getJudul());
-        proposal.setWaktuPelaksanaan(proposalDTO.getWaktuPelaksanaan());
-        proposal.setSumberDana(proposalDTO.getSumberDana());
-        proposal.setDanaYangDiUsulkan(proposalDTO.getDanaYangDiUsulkan());
-        proposal.setLuaranPenelitian(proposalDTO.getLuaranPenelitian());
-        proposal.setNamaMitra(proposalDTO.getNamaMitra());
-        proposal.setAlamatMitra(proposalDTO.getAlamatMitra());
-        proposal.setPicMitra(proposalDTO.getPicMitra());
-        proposal.setStatus(StatusPenelitian.DRAFT.toString());
-        proposal.setKetuaPeneliti(ketuaPeneliti);
-        proposal.setFileUrl(fileUrl);
-        proposal.setCreatedBy(ketuaPeneliti);
+            Proposal savedProposal = proposalRepository.save(proposal);
 
-        Proposal savedProposal = proposalRepository.save(proposal);
+            sendNotification(ketuaPeneliti,
+                    "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
+                    "Proposal", savedProposal.getId());
 
-        sendNotification(ketuaPeneliti,
-                "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
-                "Proposal", savedProposal.getId());
+            List<ProposalMember> members = new ArrayList<>();
 
-        List<ProposalMember> members = new ArrayList<>();
+            // Dosen
+            List<Dosen> dosenList = dosenRepository.findByIdIn(proposalDTO.getAnggotaDosen());
+            for (Dosen dosen : dosenList) {
+                if (dosen.getUser() != null) {
+                    ProposalMember member = new ProposalMember();
+                    member.setProposal(savedProposal);
+                    member.setUser(dosen.getUser());
+                    member.setIsMahasiswa(false);
+                    member.setStatus(StatusApproval.PENDING);
+                    members.add(member);
 
-        // Dosen
-        List<Dosen> dosenList = dosenRepository.findAllById(proposalDTO.getAnggotaDosen());
-        for (Dosen dosen : dosenList) {
-            if (dosen.getUser() != null) {
-                ProposalMember member = new ProposalMember();
-                member.setProposal(savedProposal);
-                member.setUser(dosen.getUser());
-                member.setIsMahasiswa(false);
-                member.setStatus(StatusApproval.PENDING);
-                members.add(member);
-
-                sendNotification(dosen.getUser(),
-                        "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
-                        "Proposal", savedProposal.getId());
+                    sendNotification(dosen.getUser(),
+                            "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
+                            "Proposal", savedProposal.getId());
+                }
             }
-        }
 
-        List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
-        for (Students student : studentList) {
-            if (student.getUser() != null) {
-                ProposalMember member = new ProposalMember();
-                member.setProposal(savedProposal);
-                member.setUser(student.getUser());
-                member.setIsMahasiswa(true);
-                member.setStatus(StatusApproval.PENDING);
-                members.add(member);
+            List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+            for (Students student : studentList) {
+                if (student.getUser() != null) {
+                    ProposalMember member = new ProposalMember();
+                    member.setProposal(savedProposal);
+                    member.setUser(student.getUser());
+                    member.setIsMahasiswa(true);
+                    member.setStatus(StatusApproval.PENDING);
+                    members.add(member);
 
-                sendNotification(student.getUser(),
-                        "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
-                        "Proposal", savedProposal.getId());
+                    sendNotification(student.getUser(),
+                            "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
+                            "Proposal", savedProposal.getId());
+                }
             }
-        }
 
-        proposalMemberRepository.saveAll(members);
-        return savedProposal;
+            proposalMemberRepository.saveAll(members);
+            return savedProposal;
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
 

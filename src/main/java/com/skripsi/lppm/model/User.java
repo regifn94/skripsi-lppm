@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@ToString(exclude = {"proposals", "dosen", "student", "roles"})
 @Data
 @Entity
 public class User {
@@ -45,6 +47,6 @@ public class User {
     private Students student;
 
     @JsonBackReference
-    @OneToMany(mappedBy = "ketuaPeneliti")
+    @OneToMany(mappedBy = "ketuaPeneliti", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Proposal> proposals = new ArrayList<>();
 }

@@ -18,6 +18,7 @@ public class ProposalDTO {
     private String alamatMitra;
     private String picMitra;
     private String status;
+    private String fileUrl;
     private Long ketuaPeneliti;  // ID dari User untuk ketua peneliti
     private List<Long> anggotaDosen;  // List ID dari Dosen
     private List<Long> anggotaMahasiswa;  // List ID dari Mahasiswa

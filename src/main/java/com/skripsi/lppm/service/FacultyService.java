@@ -1,5 +1,6 @@
 package com.skripsi.lppm.service;
 
+import com.skripsi.lppm.dto.FacultyRequest;
 import com.skripsi.lppm.model.Faculty;
 import com.skripsi.lppm.repository.FacultyRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,7 +15,9 @@ public class FacultyService {
 
     private final FacultyRepository facultyRepository;
 
-    public Faculty createFaculty(Faculty faculty) {
+    public Faculty createFaculty(FacultyRequest facultyRequest) {
+        var faculty = new Faculty();
+        faculty.setFacultyName(facultyRequest.getFacultyName());
         return facultyRepository.save(faculty);
     }
 
@@ -27,10 +30,10 @@ public class FacultyService {
                 .orElseThrow(() -> new EntityNotFoundException("Faculty not found with id: " + id));
     }
 
-    public Faculty updateFaculty(Long id, Faculty updatedFaculty) {
-        Faculty existing = getFacultyById(id);
+    public Faculty updateFaculty(Faculty updatedFaculty) {
+        Faculty existing = getFacultyById(updatedFaculty.getId());
         existing.setFacultyName(updatedFaculty.getFacultyName());
-        existing.setProgramStudy(updatedFaculty.getProgramStudy());
+//        existing.setProgramStudy(updatedFaculty.getProgramStudy());
         return facultyRepository.save(existing);
     }
 

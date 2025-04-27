@@ -3,6 +3,7 @@ package com.skripsi.lppm.controller;
 import com.skripsi.lppm.dto.CreateUserRequest;
 import com.skripsi.lppm.dto.CreateUserWithProfileRequest;
 import com.skripsi.lppm.dto.UpdateUserRequest;
+import com.skripsi.lppm.dto.UserDosenFacultyDTO;
 import com.skripsi.lppm.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +18,28 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> listUsers(){
-        return userService.listDataUser();
+        return userService.findAllUser();
     }
 
-    @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest createUserRequest){
-        return userService.createUser(createUserRequest);
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        var user = userService.getUserById(id);
+        return user.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    @PostMapping("/create-with-profile")
+
+//    @PostMapping
+//    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest createUserRequest){
+//        return userService.createUser(createUserRequest);
+//    }
+    @PostMapping
     public ResponseEntity<?> createWithProfile(@RequestBody CreateUserWithProfileRequest request) {
         return userService.createUserWithProfile(request);
     }
 
     @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request) {
-        return userService.updateUser(request);
+    public ResponseEntity<?> updateWithProfile(@RequestBody CreateUserWithProfileRequest request) {
+        return userService.updateUserWithProfile(request);
     }
 
     @DeleteMapping("/{id}")
@@ -39,13 +47,4 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
     }
-
-//    @GetMapping
-//    public ResponseEntity<?> listUsers(
-//            @RequestParam(required = false) String username,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size
-//    ) {
-//        return userService.listDataUser(username, page, size);
-//    }
 }

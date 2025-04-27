@@ -1,5 +1,6 @@
 package com.skripsi.lppm.controller;
 
+import com.skripsi.lppm.dto.FacultyRequest;
 import com.skripsi.lppm.model.Faculty;
 import com.skripsi.lppm.service.FacultyService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class FacultyController {
     private final FacultyService facultyService;
 
     @PostMapping
-    public ResponseEntity<Faculty> createFaculty(@RequestBody Faculty faculty) {
+    public ResponseEntity<Faculty> createFaculty(@RequestBody FacultyRequest faculty) {
         return ResponseEntity.ok(facultyService.createFaculty(faculty));
     }
 
@@ -29,9 +30,9 @@ public class FacultyController {
         return ResponseEntity.ok(facultyService.getFacultyById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Faculty> updateFaculty(@PathVariable Long id, @RequestBody Faculty faculty) {
-        return ResponseEntity.ok(facultyService.updateFaculty(id, faculty));
+    @PutMapping
+    public ResponseEntity<Faculty> updateFaculty(@RequestBody Faculty faculty) {
+        return ResponseEntity.ok(facultyService.updateFaculty(faculty));
     }
 
     @DeleteMapping("/{id}")
