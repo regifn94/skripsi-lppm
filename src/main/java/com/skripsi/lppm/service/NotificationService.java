@@ -22,6 +22,14 @@ public class NotificationService {
         }
     }
 
+    public List<Notification> getAllNotifications(){
+        try {
+            return notificationRepository.findAll();
+        }catch (Exception e){
+            throw new RuntimeException();
+        }
+    }
+
     public void sendNotification(Long userId, String message) {
         try {
             User user = new User();

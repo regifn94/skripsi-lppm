@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface ProposalMemberRepository extends JpaRepository<ProposalMember, Long> {
     List<ProposalMember> findByProposalId(Long proposalId);
+    List<ProposalMember> findByUserId(Long userId);
     Optional<ProposalMember> findByProposalIdAndUserId(Long proposalId, Long userId);
 
     @Modifying

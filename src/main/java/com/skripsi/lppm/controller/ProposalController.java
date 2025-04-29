@@ -18,13 +18,10 @@ public class ProposalController {
     @Autowired
     private ProposalService proposalService;
 
-    @PostMapping(path = "/submit",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Proposal> submitProposalWithFile(@RequestPart("proposal") ProposalDTO proposal,
-                                                   @RequestPart("file") MultipartFile file) {
-        Proposal saved = proposalService.submitProposalWithFile(proposal, file, true);
-        return ResponseEntity.ok(saved);
+    @GetMapping("/{id}")
+    public ResponseEntity<?> detail(@PathVariable("id") Long id){
+        return proposalService.detail(id);
     }
-
     @PostMapping("/without-file")
     public ResponseEntity<?> submitWithoutFile(@RequestBody ProposalDTO proposal){
         var save = proposalService.submitProposalWithoutFile(proposal);
@@ -43,11 +40,9 @@ public class ProposalController {
         Proposal updated = proposalService.updateProposalStatus(id, statusDTO.getStatus(), statusDTO.getReason());
         return ResponseEntity.ok(updated);
     }
-
-
-    @GetMapping
-    public ResponseEntity<List<Proposal>> getAllProposals() {
-        return ResponseEntity.ok(proposalService.getAllProposals());
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Proposal>> getAllProposals(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(proposalService.getAllProposals(id));
     }
 
     @DeleteMapping("/{id}")
@@ -55,9 +50,9 @@ public class ProposalController {
         return ResponseEntity.ok(proposalService.deleteProposal(id));
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateProposalWithoutFile(@PathVariable Long id, @RequestBody ProposalDTO proposalDTO) {
-        Object response = proposalService.updateProposalWithoutFile(id, proposalDTO);
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProposalWithoutFile(@RequestBody ProposalDTO proposalDTO) {
+        Object response = proposalService.updateProposalWithoutFile(proposalDTO);
         return ResponseEntity.ok(response);
     }
 

@@ -37,8 +37,4 @@ public class Students {
     @JoinColumn(name = "user_id")
     @JsonBackReference("user-student")
     private User user;
-
-//    @ManyToOne
-//    @JsonBackReference
-//    public Proposal proposal;
 }

@@ -66,9 +66,14 @@ public class UserService {
         return ResponseEntity.ok(saveUser);
     }
     public User login(LoginRequest request) {
-        return userRepository.findByUsername(request.username)
-                .filter(user -> user.getPassword().equals(request.password))
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        var dataUser = userRepository.findByUsername(request.username);
+        if(dataUser.isPresent()){
+            var user = dataUser.get();
+            if(user.getPassword().equals(request.password)){
+                return user;
+            }
+        }
+        return null;
     }
 
     public ResponseEntity<?> findAllUser() {

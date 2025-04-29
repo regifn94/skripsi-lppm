@@ -1,5 +1,7 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.skripsi.lppm.model.enums.RoleInProposal;
 import com.skripsi.lppm.model.enums.StatusApproval;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,8 +18,13 @@ public class ProposalMember {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proposal_id")
+    @JsonBackReference
     private Proposal proposal;
+
+    @Enumerated(EnumType.STRING)
+    private RoleInProposal roleInProposal;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private User user;

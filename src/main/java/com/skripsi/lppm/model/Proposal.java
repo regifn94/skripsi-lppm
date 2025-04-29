@@ -1,5 +1,6 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.skripsi.lppm.model.enums.StatusPenelitian;
 import jakarta.persistence.*;
@@ -40,15 +41,7 @@ public class Proposal {
     @JoinColumn(name = "ketua_peneliti_id", nullable = false)
     private User ketuaPeneliti;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Dosen> anggotaDosen = new ArrayList<>();
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<Students> anggotaMahasiswa = new ArrayList<>();
-
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ProposalMember> proposalMember = new ArrayList<>();
 
@@ -57,4 +50,9 @@ public class Proposal {
 
     @ManyToOne
     private User createdBy;
+
+    @ManyToOne
+    @JsonBackReference
+    @JoinColumn(name = "proposal_id")
+    private Proposal proposal;
 }
