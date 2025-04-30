@@ -18,6 +18,10 @@ public class ProposalController {
     @Autowired
     private ProposalService proposalService;
 
+    @GetMapping
+    public ResponseEntity<?> getAll(){
+        return proposalService.findAll();
+    }
     @GetMapping("/{id}")
     public ResponseEntity<?> detail(@PathVariable("id") Long id){
         return proposalService.detail(id);

@@ -35,6 +35,10 @@ public class ProposalService {
     private final StudentRepository studentRepository;
     private final FinalReportRepository finalReportRepository;
     private final ProposalMemberRepository proposalMemberRepository;
+
+    public ResponseEntity<?> findAll(){
+        return ResponseEntity.ok().body(proposalRepository.findAll());
+    }
     public String uploadFile(MultipartFile multipartFile){
         String fileUrl = "";
         if (multipartFile != null && !multipartFile.isEmpty()) {
