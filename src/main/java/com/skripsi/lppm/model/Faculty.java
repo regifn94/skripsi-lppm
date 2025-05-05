@@ -15,12 +15,4 @@ public class Faculty {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String facultyName;
-
-//    @JsonManagedReference
-//    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<ProgramStudy> programStudy;
-
-//    @JsonManagedReference
-//    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Dosen> dosenList;
 }

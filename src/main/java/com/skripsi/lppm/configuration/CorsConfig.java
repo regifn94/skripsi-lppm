@@ -13,10 +13,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // Use exact origins
+                        .allowedOriginPatterns("*") // Ganti dari allowedOrigins ke allowedOriginPatterns
                         .allowedMethods("*")
                         .allowedHeaders("*")
-                        .allowCredentials(true);  // If you're sending cookies or authentication headers
+                        .allowCredentials(true);
             }
         };
     }

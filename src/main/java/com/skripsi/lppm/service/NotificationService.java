@@ -30,22 +30,6 @@ public class NotificationService {
         }
     }
 
-    public void sendNotification(Long userId, String message) {
-        try {
-            User user = new User();
-            user.setId(userId);
-            Notification notification = Notification.builder()
-                    .user(user)
-                    .message(message)
-                    .isRead(false)
-                    .createdAt(java.time.LocalDateTime.now())
-                    .build();
-            notificationRepository.save(notification);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void sendNotification(User user, String message, String proposal, Long proposalId) {
         if (user == null) return;
 

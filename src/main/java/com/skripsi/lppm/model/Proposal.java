@@ -38,12 +38,16 @@ public class Proposal {
     private String status;
 
     @ManyToOne
-    @JoinColumn(name = "ketua_peneliti_id", nullable = false)
+    @JoinColumn(name = "ketua_peneliti_id", nullable = true)
     private User ketuaPeneliti;
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ProposalMember> proposalMember = new ArrayList<>();
+
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ProposalReviewer> proposalReviewer = new ArrayList<>();
 
     @Transient
     private String fileBase64;
@@ -51,8 +55,4 @@ public class Proposal {
     @ManyToOne
     private User createdBy;
 
-    @ManyToOne
-    @JsonBackReference
-    @JoinColumn(name = "proposal_id")
-    private Proposal proposal;
 }

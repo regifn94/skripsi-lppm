@@ -71,4 +71,10 @@ public class ProposalController {
         proposalService.rejectedMembers(proposalId, userId);
         return ResponseEntity.ok("Berhasil menolak sebagai anggota proposal.");
     }
+
+//    @PostMapping("/{proposalId}/add/reviewer/{id}")
+//    public ResponseEntity<?> addReviewer(@PathVariable Long proposalId, @PathVariable Long userId){
+//
+//    }
+
 }

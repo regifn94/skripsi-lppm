@@ -24,7 +24,7 @@ public class ProposalReviewer {
     @Enumerated(EnumType.STRING)
     private StatusApproval status = StatusApproval.PENDING;
 
-    private String reason; // alasan jika menolak
+    private String reason;
 
     private LocalDateTime assignedAt;
 }
