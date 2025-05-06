@@ -28,7 +28,6 @@ public class ProposalService {
 
     private final UserRepository userRepository;
     private final ProposalRepository proposalRepository;
-    private final NotificationRepository notificationRepository;
     private final DosenRepository dosenRepository;
     private final StudentRepository studentRepository;
     private final FinalReportRepository finalReportRepository;
@@ -78,18 +77,30 @@ public class ProposalService {
 
 
 
+        String message = "Proposal yang Anda ikuti \"" + proposal.getJudul() + "\" telah " +
+                (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK");
+
         for (ProposalMember proposalMember : proposalMembers) {
-            if (proposalMember.getUser().getDosen() != null) {
-                notificationHelper.sendNotification(proposalMember.getUser().getDosen().getUser(),
-                        "Proposal yang Anda ikuti \"" + proposal.getJudul() + "\" telah " +
-                                (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK"),"Proposal", proposalId);
+            if (proposalMember == null || proposalMember.getUser() == null) {
+                continue; // Lewati jika null
             }
-            else{
-                notificationHelper.sendNotification(proposalMember.getUser().getStudent().getUser(),
-                        "Proposal yang Anda ikuti \"" + proposal.getJudul() + "\" telah " +
-                                (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK"),"Proposal", proposalId);
+
+            User user = proposalMember.getUser();
+            Dosen dosen = user.getDosen();
+            Students student = user.getStudent();
+
+            User targetUser = null;
+            if (dosen != null && dosen.getUser() != null) {
+                targetUser = dosen.getUser();
+            } else if (student != null && student.getUser() != null) {
+                targetUser = student.getUser();
+            }
+
+            if (targetUser != null) {
+                notificationHelper.sendNotification(targetUser, message, "Proposal", proposalId);
             }
         }
+
         return updatedProposal;
     }
 
@@ -100,20 +111,23 @@ public class ProposalService {
         member.setStatus(StatusApproval.APPROVED);
         proposalMemberRepository.save(member);
 
-        List<ProposalMember> semuaAnggota = proposalMemberRepository.findByProposalId(proposalId);
-        boolean semuaSetuju = semuaAnggota.stream()
+        List<ProposalMember> allMembers = proposalMemberRepository.findByProposalId(proposalId);
+        boolean allApproved = allMembers.stream()
                 .allMatch(a -> a.getStatus() == StatusApproval.APPROVED);
 
-        if (semuaSetuju) {
+        if (allApproved) {
             Proposal proposal = member.getProposal();
 
             notificationHelper.sendNotification(proposal.getKetuaPeneliti(),
                     "Semua anggota telah menyetujui. Proposal akan dikirim ke Ketua Penelitian Fakultas.",
                     "Proposal", proposal.getId());
 
-            List<User> ketuaPenelitianFakultasList = userRepository.findByRoles_Name("KETUA_PENELITIAN_FAKULTAS");
-            for (User ketua : ketuaPenelitianFakultasList) {
-                notificationHelper.sendNotification(ketua,
+            Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
+
+            List<User> facultyResearchCoordinators = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
+
+            for (User facultyResearchCoordinator : facultyResearchCoordinators) {
+                notificationHelper.sendNotification(facultyResearchCoordinator,
                         "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
                         "Proposal", proposal.getId());
             }

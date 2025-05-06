@@ -7,9 +7,12 @@ import com.skripsi.lppm.repository.ProposalRepository;
 import com.skripsi.lppm.repository.ProposalReviewerRepository;
 import com.skripsi.lppm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,7 +25,6 @@ public class ProposalReviewerService {
     private final UserRepository userRepository;
     private final NotificationService notifikasiService;
 
-    // 2.1 Menunjuk reviewer
     public void tunjukReviewer(Long proposalId, Long reviewerId) {
         Proposal proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
@@ -40,6 +42,39 @@ public class ProposalReviewerService {
         notifikasiService.sendNotification(reviewer,
                 "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
                 "ReviewProposal", proposalId);
+    }
+
+    public void accepted(Long proposalId, Long reviewerId) {
+        Proposal proposal = proposalRepository.findById(proposalId)
+                .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
+        User reviewer = userRepository.findById(reviewerId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+
+        ProposalReviewer pr = new ProposalReviewer();
+        pr.setProposal(proposal);
+        pr.setReviewer(reviewer);
+        pr.setAssignedAt(LocalDateTime.now());
+        pr.setStatus(StatusApproval.ACCEPTED);
+
+        reviewerRepository.save(pr);
+
+        notifikasiService.sendNotification(reviewer,
+                "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
+                "ReviewProposal", proposalId);
+    }
+
+    public ResponseEntity<?> getListProposalByReviewerId(Long reviewerId){
+        try {
+            var reviewers = reviewerRepository.findByReviewerId(reviewerId);
+            List<Long> proposalIds = new ArrayList<>();
+            for (var reviewer : reviewers) {
+                proposalIds.add(reviewer.getProposal().getId());
+            }
+            var proposals = proposalRepository.findByIdIn(proposalIds);
+            return ResponseEntity.status(HttpStatus.OK).body(proposals);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error : " + e.getMessage());
+        }
     }
 
     // 2.2 Reviewer tolak undangan

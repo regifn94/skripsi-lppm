@@ -11,4 +11,6 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
 
     @Query("SELECT p FROM Proposal p WHERE p.ketuaPeneliti.id = :userId")
     List<Proposal> findByKetuaPenelitiId(@Param("userId") Long userId);
+
+    List<Proposal> findByIdIn(List<Long> proposalIds);
 }
