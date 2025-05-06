@@ -19,4 +19,6 @@ public interface ProposalMemberRepository extends JpaRepository<ProposalMember, 
     @Transactional
     @Query("DELETE FROM ProposalMember pm WHERE pm.proposal.id = :proposalId")
     void deleteAllByProposalId(@Param("proposalId") Long proposalId);
+
+    void deleteByProposalId(Long id);
 }

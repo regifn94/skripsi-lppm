@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Evaluasi Proposal Penelitian</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>FORM EVALUASI PROPOSAL PENELITIAN</h2>
+    <table class="info-table">
+        <tr><td><strong>Judul Proposal</strong></td><td>: <span id="judul">Judul Proposal Di Sini</span></td></tr>
+        <tr><td><strong>Ketua Peneliti</strong></td><td>: <span id="ketua">Nama Ketua</span></td></tr>
+        <tr><td><strong>Waktu Pelaksanaan</strong></td><td>: <span id="waktu">3 Bulan</span></td></tr>
+        <tr><td><strong>Sumber Dana</strong></td><td>: <span id="sumber">Internal</span></td></tr>
+        <tr><td><strong>Dana Diusulkan</strong></td><td>: <span id="usul">Rp10.000.000</span></td></tr>
+        <tr><td><strong>Dana Disetujui</strong></td><td>: <input type="text" name="danaDisetujui"></td></tr>
+        <tr><td><strong>Luaran Penelitian</strong></td><td>: <textarea name="luaran" rows="2" cols="50"></textarea></td></tr>
+    </table>
+
+    <h3>Tabel Penilaian</h3>
+    <table class="score-table">
+        <thead>
+        <tr>
+            <th>No</th>
+            <th>Kriteria</th>
+            <th>Bobot</th>
+            <th>Nilai</th>
+            <th>Bobot * Nilai</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>1</td>
+            <td>Kualitas dan relevansi masalah penelitian, tujuan, dan kebaruan </td>
+            <td>25</td>
+            <td><input type="number" name="nilai1" max="25" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Kesesuaian dengan roadmap</td>
+            <td>15</td>
+            <td><input type="number" name="nilai2" max="15" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Tinjauan pustaka</td>
+            <td>10</td>
+            <td><input type="number" name="nilai3" max="10" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Kemutakhiran sumber pustaka</td>
+            <td>5</td>
+            <td><input type="number" name="nilai4" max="5" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Metodologi penelitian</td>
+            <td>20</td>
+            <td><input type="number" name="nilai5" max="20" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Target luaran</td>
+            <td>10</td>
+            <td><input type="number" name="nilai6" max="10" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Kompetensi tim dan tugas</td>
+            <td>10</td><td><input type="number" name="nilai7" max="10" min="0"></td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Kualitas penulisan proposal</td>
+            <td>5</td>
+            <td><input type="number" name="nilai8" max="5" min="0"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <label for="komentar"><strong>Komentar / Saran Reviewer:</strong></label><br>
+    <textarea id="komentar" name="komentar" rows="4" cols="80"></textarea>
+
+    <br><br>
+    <button type="submit">Submit Evaluasi</button>
+</div>
+</body>
+</html>

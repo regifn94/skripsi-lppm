@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Evaluasi Proposal Penelitian</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.5;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #000;
+        }
+        .form-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            border-bottom: 1px solid #000;
+        }
+        .form-row {
+            display: flex;
+            border-bottom: 1px solid #000;
+        }
+        .form-row:last-child {
+            border-bottom: none;
+        }
+        .form-label {
+            flex: 1;
+            padding: 8px;
+            font-weight: bold;
+            border-right: 1px solid #000;
+            min-width: 200px;
+        }
+        .form-value {
+            flex: 3;
+            padding: 8px;
+            border-right: 1px solid #000;
+            min-height: 20px;
+        }
+        .form-value-small {
+            flex: 1;
+            padding: 8px;
+            border-right: 1px solid #000;
+            text-align: center;
+        }
+        .form-value-no-border {
+            flex: 3;
+            padding: 8px;
+        }
+        .form-section {
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 1px solid #000;
+        }
+        .criteria-label {
+            flex: 3;
+            padding: 8px;
+            border-right: 1px solid #000;
+        }
+        .criteria-justification {
+            flex: 2;
+            padding: 8px;
+            border-right: 1px solid #000;
+        }
+        .criteria-score {
+            flex: 1;
+            padding: 8px;
+            border-right: 1px solid #000;
+            text-align: center;
+        }
+        .indented {
+            padding-left: 20px;
+        }
+        .comments {
+            min-height: 150px;
+        }
+        .signature {
+            min-height: 100px;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .form-container {
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <div class="form-header">LEMBAR EVALUASI PROPOSAL PENELITIAN</div>
+
+    <div class="form-row">
+        <div class="form-label">Judul Proposal Penelitian</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Waktu Pelaksanaan</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Sumber Dana</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Dana yang diusulkan Rp.</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Dana yang disetujui Rp.</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Luaran Penelitian</div>
+        <div class="form-value"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label"></div>
+        <div class="form-value-no-border"></div>
+    </div>
+
+    <div class="form-section">PENILAIAN PROPOSAL PENELITIAN</div>
+
+    <div class="form-row">
+        <div class="criteria-label"><strong>Kriteria Penilaian</strong></div>
+        <div class="criteria-justification"><strong>Justifikasi Penilaian</strong></div>
+        <div class="criteria-score"><strong>*</strong></div>
+        <div class="criteria-score"><strong>*</strong></div>
+        <div class="criteria-score"><strong>*Nilai</strong></div>
+        <div class="criteria-score"><strong>*Nilai*</strong></div>
+        <div class="criteria-score"><strong>Bobot*</strong></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kualitas dan relevansi masalah penelitian, tujuan, dan kebaruan</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">25</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kesesuaian dengan Roadmap Penelitian Fakultas</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">15</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label indented">Relevansi Tinjauan Pustaka</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">10</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label indented">Kemutakhiran dan sumber primer tinjauan pustaka</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">5</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kesesuaian metodologi dengan masalah penelitian</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">20</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kewajaran target capaian luaran</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">10</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kesesuaian kompetensi tim peneliti dan pembagian tugas</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">10</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="criteria-label">Kesesuaian penulisan proposal dengan panduan</div>
+        <div class="criteria-justification"></div>
+        <div class="criteria-score">5</div>
+        <div class="criteria-score">0</div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+        <div class="criteria-score"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label">Komentar atau Saran:</div>
+        <div class="form-value-no-border comments"></div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label"></div>
+        <div class="form-value-no-border">Airmail, [tanggul-bulan-tahun]</div>
+    </div>
+
+    <div class="form-row signature">
+        <div class="form-label"></div>
+        <div class="form-value-no-border">Nama Reviewer</div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-label"></div>
+        <div class="form-value-no-border">NIDN</div>
+    </div>
+</div>
+</body>
+</html>

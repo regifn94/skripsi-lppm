@@ -1,0 +1,62 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f6f6;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  max-width: 900px;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2, h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 25px;
+}
+
+.info-table td {
+  padding: 6px;
+}
+
+.score-table th, .score-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+.score-table input {
+  width: 60px;
+  padding: 5px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  resize: vertical;
+}
+
+button {
+  display: block;
+  margin: 0 auto;
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}

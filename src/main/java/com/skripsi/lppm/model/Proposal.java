@@ -41,7 +41,7 @@ public class Proposal {
     @JoinColumn(name = "ketua_peneliti_id", nullable = true)
     private User ketuaPeneliti;
 
-    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ProposalMember> proposalMember = new ArrayList<>();
 
@@ -49,10 +49,15 @@ public class Proposal {
     @JsonManagedReference
     private List<ProposalReviewer> proposalReviewer = new ArrayList<>();
 
+    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private ProposalReviewByFacultyHead reviewByFacultyHead;
+
+    private Boolean approvedByDean = false;
+
     @Transient
     private String fileBase64;
 
     @ManyToOne
     private User createdBy;
-
 }

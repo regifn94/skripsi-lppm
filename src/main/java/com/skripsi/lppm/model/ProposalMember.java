@@ -26,7 +26,8 @@ public class ProposalMember {
     @Enumerated(EnumType.STRING)
     private RoleInProposal roleInProposal;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Enumerated(EnumType.STRING)

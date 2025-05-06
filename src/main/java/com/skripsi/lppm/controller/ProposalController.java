@@ -76,10 +76,10 @@ public class ProposalController {
         proposalService.rejectedMembers(proposalId, userId);
         return ResponseEntity.ok("Berhasil menolak sebagai anggota proposal.");
     }
-
-    @PostMapping("/{proposalId}/add-reviewer")
-    public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @io.swagger.v3.oas.annotations.parameters.RequestBody ReviewerAddRequest request){
-        proposalReviewerService.tunjukReviewer(proposalId, request);
-        return ResponseEntity.ok().body("Success add reviewer");
-    }
+//
+//    @PostMapping("/{proposalId}/add-reviewer")
+//    public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @io.swagger.v3.oas.annotations.parameters.RequestBody ReviewerAddRequest request){
+//        proposalReviewerService.tunjukReviewer(proposalId, request);
+//        return ResponseEntity.ok().body("Success add reviewer");
+//    }
 }

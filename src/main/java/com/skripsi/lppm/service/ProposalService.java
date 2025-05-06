@@ -10,7 +10,7 @@ import com.skripsi.lppm.model.enums.StatusPenelitian;
 import com.skripsi.lppm.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,7 +36,9 @@ public class ProposalService {
     private final ProposalReviewerRepository proposalReviewerRepository;
 
     public ResponseEntity<?> findAll(){
-        return ResponseEntity.ok().body(proposalRepository.findAll());
+        return ResponseEntity.ok().body(
+                proposalRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
+        );
     }
     public String uploadFile(MultipartFile multipartFile){
         String fileUrl = "";
@@ -165,15 +167,26 @@ public class ProposalService {
         return proposalRepository.findByKetuaPenelitiId(userId);
     }
 
+    @Transactional
     public Boolean deleteProposal(Long id){
         try {
             finalReportRepository.deleteByProposalId(id);
+
+            // Hapus semua member yang terkait
+            proposalMemberRepository.deleteByProposalId(id);
+
+            // Hapus semua reviewer (jika perlu)
+            proposalReviewerRepository.deleteByProposalId(id);
+
+            // Hapus proposal
             proposalRepository.deleteById(id);
             return true;
         } catch (Exception e) {
+            e.printStackTrace(); // Debug lebih mudah
             return false;
         }
     }
+
 
     public Object submitProposalWithoutFile(ProposalDTO proposalDTO) {
         try {
@@ -313,28 +326,4 @@ public class ProposalService {
         proposalMemberRepository.saveAll(members);
         return updatedProposal;
     }
-
-    public ResponseEntity<?> addAsReviewer(Long proposalId, Long userId){
-        try {
-            var proposalOpt = proposalRepository.findById(proposalId);
-            if (proposalOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proposal tidak ditemukan");
-            }
-            var userOpt = userRepository.findById(userId);
-            if (userOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User tidak ditemukan");
-            }
-
-            var proposal = proposalOpt.get();
-            var user = userOpt.get();
-            ProposalReviewer proposalReview = new ProposalReviewer();
-            proposalReview.setReviewer(user);
-            proposalReview.setProposal(proposal);
-            proposalReview.setStatus(StatusApproval.PENDING);
-            return ResponseEntity.ok(proposalReviewerRepository.save(proposalReview));
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-
 }
