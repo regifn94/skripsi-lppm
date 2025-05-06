@@ -1,6 +1,7 @@
 package com.skripsi.lppm.service;
 
 import com.skripsi.lppm.model.*;
+import com.skripsi.lppm.model.enums.ProposalStatus;
 import com.skripsi.lppm.model.enums.StatusApproval;
 import com.skripsi.lppm.repository.EvaluasiProposalRepository;
 import com.skripsi.lppm.repository.ProposalRepository;
@@ -37,6 +38,10 @@ public class ProposalReviewerService {
         pr.setAssignedAt(LocalDateTime.now());
         pr.setStatus(StatusApproval.PENDING);
 
+        proposal.setStatus(ProposalStatus.WAITING_REVIEWER_RESPONSE.toString());
+
+        proposalRepository.save(proposal);
+
         reviewerRepository.save(pr);
 
         notifikasiService.sendNotification(reviewer,
@@ -44,23 +49,28 @@ public class ProposalReviewerService {
                 "ReviewProposal", proposalId);
     }
 
-    public void accepted(Long proposalId, Long reviewerId) {
-        Proposal proposal = proposalRepository.findById(proposalId)
-                .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
-        User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+    public ResponseEntity<?> accepted(Long proposalId, Long reviewerId) {
+        try {
+            Proposal proposal = proposalRepository.findById(proposalId)
+                    .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
+            User reviewer = userRepository.findById(reviewerId)
+                    .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
 
-        ProposalReviewer pr = new ProposalReviewer();
-        pr.setProposal(proposal);
-        pr.setReviewer(reviewer);
-        pr.setAssignedAt(LocalDateTime.now());
-        pr.setStatus(StatusApproval.ACCEPTED);
+            ProposalReviewer pr = new ProposalReviewer();
+            pr.setProposal(proposal);
+            pr.setReviewer(reviewer);
+            pr.setAssignedAt(LocalDateTime.now());
+            pr.setStatus(StatusApproval.ACCEPTED);
 
-        reviewerRepository.save(pr);
+            reviewerRepository.save(pr);
 
-        notifikasiService.sendNotification(reviewer,
-                "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
-                "ReviewProposal", proposalId);
+            notifikasiService.sendNotification(reviewer,
+                    "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
+                    "ReviewProposal", proposalId);
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
+        }
     }
 
     public ResponseEntity<?> getListProposalByReviewerId(Long reviewerId){
@@ -78,48 +88,62 @@ public class ProposalReviewerService {
     }
 
     // 2.2 Reviewer tolak undangan
-    public void rejectUndangan(Long proposalId, Long reviewerId, String reason) {
-        ProposalReviewer reviewer = reviewerRepository.findByProposalIdAndReviewerId(proposalId, reviewerId)
-                .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
+    public ResponseEntity<?> rejectUndangan(Long proposalId, Long reviewerId, String reason) {
+        try {
+            ProposalReviewer reviewer = reviewerRepository.findByProposalIdAndReviewerId(proposalId, reviewerId)
+                    .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
 
-        reviewer.setStatus(StatusApproval.REJECTED);
-        reviewer.setReason(reason);
-        reviewerRepository.save(reviewer);
-        var proposalOpt = proposalRepository.findById(proposalId);
-        Long facultyId = 0L;
-        if(proposalOpt.isPresent()){
-            var proposal = proposalOpt.get();
-            facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
-        }
+            reviewer.setStatus(StatusApproval.REJECTED);
+            reviewer.setReason(reason);
+            reviewerRepository.save(reviewer);
+            var proposalOpt = proposalRepository.findById(proposalId);
+            Long facultyId = 0L;
+            if (proposalOpt.isPresent()) {
+                var proposal = proposalOpt.get();
+                proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+                proposalRepository.save(proposal);
+                facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
+            }
 
-        // Kirim notifikasi ke Ketua Penelitian Fakultas
-        List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
-        for (User ketua : ketuaList) {
-            notifikasiService.sendNotification(ketua,
-                    "Reviewer menolak undangan untuk proposal: " + reviewer.getProposal().getJudul(),
-                    "ReviewProposal", proposalId);
+            // Kirim notifikasi ke Ketua Penelitian Fakultas
+            List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
+            for (User ketua : ketuaList) {
+                notifikasiService.sendNotification(ketua,
+                        "Reviewer menolak undangan untuk proposal: " + reviewer.getProposal().getJudul(),
+                        "ReviewProposal", proposalId);
+            }
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
     }
 
     // 2.3 Reviewer terima undangan
-    public void acceptUndangan(Long proposalId, Long reviewerId) {
-        ProposalReviewer reviewer = reviewerRepository.findByProposalIdAndReviewerId(proposalId, reviewerId)
-                .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
+    public ResponseEntity<?> acceptUndangan(Long proposalId, Long reviewerId) {
+        try {
+            ProposalReviewer reviewer = reviewerRepository.findByProposalIdAndReviewerId(proposalId, reviewerId)
+                    .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
 
-        reviewer.setStatus(StatusApproval.ACCEPTED);
-        reviewerRepository.save(reviewer);
-        var proposalOpt = proposalRepository.findById(proposalId);
-        Long facultyId = 0L;
-        if(proposalOpt.isPresent()){
-            var proposal = proposalOpt.get();
-            facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
-        }
+            reviewer.setStatus(StatusApproval.ACCEPTED);
+            reviewerRepository.save(reviewer);
+            var proposalOpt = proposalRepository.findById(proposalId);
+            Long facultyId = 0L;
+            if (proposalOpt.isPresent()) {
+                var proposal = proposalOpt.get();
+                proposal.setStatus(ProposalStatus.REVIEW_IN_PROGRESS.toString());
+                proposalRepository.save(proposal);
+                facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
+            }
 
-        List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
-        for (User ketua : ketuaList) {
-            notifikasiService.sendNotification(ketua,
-                    "Reviewer menerima undangan untuk proposal: " + reviewer.getProposal().getJudul(),
-                    "ReviewProposal", proposalId);
+            List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
+            for (User ketua : ketuaList) {
+                notifikasiService.sendNotification(ketua,
+                        "Reviewer menerima undangan untuk proposal: " + reviewer.getProposal().getJudul(),
+                        "ReviewProposal", proposalId);
+            }
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
     }
 
