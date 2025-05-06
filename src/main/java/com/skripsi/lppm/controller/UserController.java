@@ -37,6 +37,8 @@ public class UserController {
         return userService.createUserWithProfile(request);
     }
 
+
+
     @PutMapping
     public ResponseEntity<?> updateWithProfile(@RequestBody CreateUserWithProfileRequest request) {
         return userService.updateUserWithProfile(request);
@@ -46,5 +48,10 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/reviewer/{id}")
+    public ResponseEntity<?> getUserWithRoleReviewer(@PathVariable Long id){
+        return userService.getUserWithRoleReviewer(id);
     }
 }

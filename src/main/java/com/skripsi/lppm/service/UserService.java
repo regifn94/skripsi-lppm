@@ -284,4 +284,17 @@ public class UserService {
         return ResponseEntity.ok("User updated successfully");
     }
 
+    public ResponseEntity<?> getUserWithRoleReviewer(Long dekanId){
+        try {
+            var dosen = dosenRepository.findById(dekanId);
+            if (dosen.isPresent()) {
+                var faculty = dosen.get().getFaculty().getId();
+                var userReviewers = userRepository.findByRoleAndFaculty("REVIEWER", faculty);
+                return ResponseEntity.status(HttpStatus.OK).body(userReviewers);
+            }
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error " + e.getMessage());
+        }
+    }
 }
