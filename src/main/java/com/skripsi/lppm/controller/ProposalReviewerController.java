@@ -1,5 +1,6 @@
 package com.skripsi.lppm.controller;
 
+import com.skripsi.lppm.dto.ReviewerAddRequest;
 import com.skripsi.lppm.dto.ReviewerRejectedRequest;
 import com.skripsi.lppm.service.ProposalReviewerService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -13,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 public class ProposalReviewerController {
     private final ProposalReviewerService proposalReviewerService;
 
-    @PostMapping("add-reviewer/{reviewerId}/{proposalId}")
-    public ResponseEntity<?> setReviewer(@PathVariable Long reviewerId, @PathVariable Long proposalId){
-        proposalReviewerService.tunjukReviewer(reviewerId, proposalId);
+    @PostMapping("add-reviewer/{idProposal}")
+    public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @RequestBody ReviewerAddRequest request){
+        proposalReviewerService.tunjukReviewer(proposalId, request);
         return ResponseEntity.ok().body("Success add reviewer");
     }
 

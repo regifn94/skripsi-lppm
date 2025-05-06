@@ -23,7 +23,7 @@ public class EvaluasiProposal {
 
     private String nilai;
 
-    private String rekomendasi; // misalnya: "Diterima tanpa revisi"
+    private String rekomendasi;
 
     private LocalDateTime tanggalEvaluasi;
 }

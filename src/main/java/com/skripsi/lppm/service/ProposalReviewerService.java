@@ -1,5 +1,6 @@
 package com.skripsi.lppm.service;
 
+import com.skripsi.lppm.dto.ReviewerAddRequest;
 import com.skripsi.lppm.model.*;
 import com.skripsi.lppm.model.enums.ProposalStatus;
 import com.skripsi.lppm.model.enums.StatusApproval;
@@ -26,27 +27,28 @@ public class ProposalReviewerService {
     private final UserRepository userRepository;
     private final NotificationService notifikasiService;
 
-    public void tunjukReviewer(Long proposalId, Long reviewerId) {
+    public void tunjukReviewer(Long proposalId, ReviewerAddRequest request) {
         Proposal proposal = proposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
-        User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        var reviewers = userRepository.findByIdIn(request.getReviewerIds());
 
-        ProposalReviewer pr = new ProposalReviewer();
-        pr.setProposal(proposal);
-        pr.setReviewer(reviewer);
-        pr.setAssignedAt(LocalDateTime.now());
-        pr.setStatus(StatusApproval.PENDING);
+        for(var reviewer : reviewers){
+            ProposalReviewer pr = new ProposalReviewer();
+            pr.setProposal(proposal);
+            pr.setReviewer(reviewer);
+            pr.setAssignedAt(LocalDateTime.now());
+            pr.setStatus(StatusApproval.PENDING);
 
-        proposal.setStatus(ProposalStatus.WAITING_REVIEWER_RESPONSE.toString());
+            proposal.setStatus(ProposalStatus.WAITING_REVIEWER_RESPONSE.toString());
 
-        proposalRepository.save(proposal);
+            proposalRepository.save(proposal);
 
-        reviewerRepository.save(pr);
+            reviewerRepository.save(pr);
 
-        notifikasiService.sendNotification(reviewer,
-                "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
-                "ReviewProposal", proposalId);
+            notifikasiService.sendNotification(reviewer,
+                    "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
+                    "ReviewProposal", proposalId);
+        }
     }
 
     public ResponseEntity<?> accepted(Long proposalId, Long reviewerId) {

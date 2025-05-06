@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "JOIN u.dosen d " +
             "WHERE r.name = :roleName AND d.faculty.id = :facultyId")
     List<User> findByRoleAndFaculty(@Param("roleName") String roleName, @Param("facultyId") Long facultyId);
+
+    List<User> findByIdIn(List<Long> id);
 }

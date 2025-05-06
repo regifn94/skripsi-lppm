@@ -1,9 +1,12 @@
 package com.skripsi.lppm.controller;
 
 import com.skripsi.lppm.dto.ProposalDTO;
+import com.skripsi.lppm.dto.ReviewerAddRequest;
 import com.skripsi.lppm.dto.StatusUpdateDTO;
 import com.skripsi.lppm.model.Proposal;
+import com.skripsi.lppm.service.ProposalReviewerService;
 import com.skripsi.lppm.service.ProposalService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +17,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/proposals")
+@RequiredArgsConstructor
 public class ProposalController {
-    @Autowired
-    private ProposalService proposalService;
+
+    private final ProposalService proposalService;
+    private final ProposalReviewerService proposalReviewerService;
 
     @GetMapping
     public ResponseEntity<?> getAll(){
@@ -72,9 +77,9 @@ public class ProposalController {
         return ResponseEntity.ok("Berhasil menolak sebagai anggota proposal.");
     }
 
-//    @PostMapping("/{proposalId}/add/reviewer/{id}")
-//    public ResponseEntity<?> addReviewer(@PathVariable Long proposalId, @PathVariable Long userId){
-//
-//    }
-
+    @PostMapping("/{proposalId}/add-reviewer")
+    public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @io.swagger.v3.oas.annotations.parameters.RequestBody ReviewerAddRequest request){
+        proposalReviewerService.tunjukReviewer(proposalId, request);
+        return ResponseEntity.ok().body("Success add reviewer");
+    }
 }
