@@ -10,4 +10,6 @@ public interface ProposalReviewerRepository extends JpaRepository<ProposalReview
     Optional<ProposalReviewer> findByProposalIdAndReviewerId(Long proposalId, Long reviewerId);
 
     List<ProposalReviewer> findByReviewerId(Long reviewerId);
+
+    boolean existsByProposalIdAndReviewerId(Long proposalId, Long id);
 }

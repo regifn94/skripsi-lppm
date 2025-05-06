@@ -33,6 +33,12 @@ public class ProposalReviewerService {
         var reviewers = userRepository.findByIdIn(request.getReviewerIds());
 
         for(var reviewer : reviewers){
+            boolean sudahPernahDitugaskan = reviewerRepository
+                    .existsByProposalIdAndReviewerId(proposalId, reviewer.getId());
+            if (sudahPernahDitugaskan) {
+                continue;
+            }
+
             ProposalReviewer pr = new ProposalReviewer();
             pr.setProposal(proposal);
             pr.setReviewer(reviewer);
