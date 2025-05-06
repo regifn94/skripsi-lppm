@@ -3,6 +3,7 @@ package com.skripsi.lppm.service;
 import com.skripsi.lppm.dto.FacultyHeadReviewRequest;
 import com.skripsi.lppm.dto.ProposalEvaluationRequest;
 import com.skripsi.lppm.dto.ReviewerAddRequest;
+import com.skripsi.lppm.helper.NotificationHelper;
 import com.skripsi.lppm.model.*;
 import com.skripsi.lppm.model.enums.FacultyHeadReview;
 import com.skripsi.lppm.model.enums.ProposalStatus;
@@ -27,7 +28,7 @@ public class ProposalReviewerService {
     private final ProposalReviewerRepository reviewerRepository;
     private final EvaluasiProposalRepository evaluasiRepository;
     private final UserRepository userRepository;
-    private final NotificationService notifikasiService;
+    private final NotificationHelper notificationHelper;
     private final ProposalEvaluationRepository proposalEvaluationRepository;
     private final ProposalReviewByFacultyHeadRepository proposalReviewByFacultyHeadRepository;
 
@@ -56,7 +57,7 @@ public class ProposalReviewerService {
 
                 reviewerRepository.save(pr);
 
-                notifikasiService.sendNotification(reviewer,
+                notificationHelper.sendNotification(reviewer,
                         "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
                         "ReviewProposal", proposalId);
             }
@@ -81,7 +82,7 @@ public class ProposalReviewerService {
 
             reviewerRepository.save(pr);
 
-            notifikasiService.sendNotification(reviewer,
+            notificationHelper.sendNotification(reviewer,
                     "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
                     "ReviewProposal", proposalId);
             return ResponseEntity.ok().build();
@@ -124,7 +125,7 @@ public class ProposalReviewerService {
 
             List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
             for (User ketua : ketuaList) {
-                notifikasiService.sendNotification(ketua,
+                notificationHelper.sendNotification(ketua,
                         "Reviewer menolak undangan untuk proposal: " + reviewer.getProposal().getJudul(),
                         "ReviewProposal", proposalId);
             }
@@ -152,7 +153,7 @@ public class ProposalReviewerService {
 
             List<User> ketuaList = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
             for (User ketua : ketuaList) {
-                notifikasiService.sendNotification(ketua,
+                notificationHelper.sendNotification(ketua,
                         "Reviewer menerima undangan untuk proposal: " + reviewer.getProposal().getJudul(),
                         "ReviewProposal", proposalId);
             }
@@ -211,7 +212,7 @@ public class ProposalReviewerService {
                 proposalReviewByFacultyHeadRepository.save(facultyHead);
                 var ketuaPenelitian = proposal.getKetuaPeneliti();
 
-                notifikasiService.sendNotification(ketuaPenelitian,
+                notificationHelper.sendNotification(ketuaPenelitian,
                         "Proposal anda dengan judul " + proposal.getJudul() + "telah di tolak",
                         "ReviewProposal", proposal.getId());
                 return ResponseEntity.status(HttpStatus.OK).body("success rejected proposal");
@@ -244,7 +245,7 @@ public class ProposalReviewerService {
                 proposalReviewByFacultyHeadRepository.save(facultyHead);
 
                 var ketuaPenelitian = proposal.getKetuaPeneliti();
-                notifikasiService.sendNotification(ketuaPenelitian,
+                notificationHelper.sendNotification(ketuaPenelitian,
                         "Proposal anda dengan judul " + proposal.getJudul() + "telah di diterima",
                         "ReviewProposal", proposal.getId());
 
@@ -252,7 +253,7 @@ public class ProposalReviewerService {
 
                 List<User> deans = userRepository.findByRoleAndFaculty("DEKAN", facultyId);
                 for(var dean :deans ){
-                    notifikasiService.sendNotification(dean,
+                    notificationHelper.sendNotification(dean,
                             "Proposal berjudul" + proposal.getJudul() + "membutuhkan persetujuan Anda.",
                             "ReviewProposal", proposal.getId());
                 }

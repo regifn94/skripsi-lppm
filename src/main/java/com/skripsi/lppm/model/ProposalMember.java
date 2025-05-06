@@ -1,6 +1,7 @@
 package com.skripsi.lppm.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skripsi.lppm.model.enums.RoleInProposal;
 import com.skripsi.lppm.model.enums.StatusApproval;
 import jakarta.persistence.*;
@@ -28,6 +29,7 @@ public class ProposalMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @Enumerated(EnumType.STRING)

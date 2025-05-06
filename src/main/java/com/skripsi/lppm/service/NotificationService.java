@@ -30,20 +30,25 @@ public class NotificationService {
         }
     }
 
-    public void sendNotification(User user, String message, String proposal, Long proposalId) {
-        if (user == null) return;
-
-        Notification notification = Notification.builder()
-                .user(user)
-                .message(message)
-                .isRead(false)
-                .relatedModel(proposal)
-                .relatedId(proposalId)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        notificationRepository.save(notification);
-    }
+//    public void sendNotification(User user, String message, String proposal, Long proposalId) {
+//        try {
+//
+//            if (user == null) return;
+//
+//            Notification notification = Notification.builder()
+//                    .user(user)
+//                    .message(message)
+//                    .isRead(false)
+//                    .relatedModel(proposal)
+//                    .relatedId(proposalId)
+//                    .createdAt(LocalDateTime.now())
+//                    .build();
+//
+//            notificationRepository.save(notification);
+//        }catch (Exception e){
+//            throw new RuntimeException(e.getMessage());
+//        }
+//    }
 
     public void markAsRead(Long notificationId) {
         try {

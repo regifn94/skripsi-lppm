@@ -1,7 +1,9 @@
 package com.skripsi.lppm.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.skripsi.lppm.model.enums.StatusPenelitian;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +12,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 @ToString(exclude = "ketuaPeneliti")
 @Data
 @Getter

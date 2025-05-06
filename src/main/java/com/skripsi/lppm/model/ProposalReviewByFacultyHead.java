@@ -1,5 +1,6 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,10 +16,12 @@ public class ProposalReviewByFacultyHead {
 
     @OneToOne
     @JoinColumn(name = "proposal_id")
+    @JsonIgnore
     private Proposal proposal;
 
     @ManyToOne
     @JoinColumn(name = "reviewed_by_id")
+    @JsonIgnore
     private User reviewedBy;
 
     private String status;

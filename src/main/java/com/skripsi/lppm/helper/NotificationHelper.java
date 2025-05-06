@@ -16,18 +16,22 @@ public class NotificationHelper {
     private final NotificationRepository notificationRepository;
 
     public void sendNotification(User user, String message, String proposal, Long proposalId) {
-        if (user == null) return;
+        try {
+            if (user == null) return;
 
-        Notification notification = Notification.builder()
-                .user(user)
-                .message(message)
-                .isRead(false)
-                .relatedModel(proposal)
-                .relatedId(proposalId)
-                .createdAt(LocalDateTime.now())
-                .build();
+            Notification notification = Notification.builder()
+                    .user(user)
+                    .message(message)
+                    .isRead(false)
+                    .relatedModel(proposal)
+                    .relatedId(proposalId)
+                    .createdAt(LocalDateTime.now())
+                    .build();
 
-        notificationRepository.save(notification);
-        notificationWebSocketController.sendNotificationToUser(user.getId(), notification);
+            notificationRepository.save(notification);
+            notificationWebSocketController.sendNotificationToUser(user.getId(), notification);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

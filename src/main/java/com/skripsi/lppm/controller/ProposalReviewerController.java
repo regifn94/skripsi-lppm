@@ -21,12 +21,16 @@ public class ProposalReviewerController {
         return proposalReviewerService.setAsReviewer(proposalId, request);
     }
 
-    @GetMapping("/list-proposal-by-reviewer/{reviewerId}")
+    @GetMapping("/reviewer/{reviewerId}")
+    @Operation(
+            summary = "List Proposal by reviewer id",
+            description = "only show data by roles reviewer"
+    )
     public ResponseEntity<?> getListProposal(@PathVariable Long reviewerId){
         return proposalReviewerService.getListProposalByReviewerId(reviewerId);
     }
 
-    @GetMapping("/accepted/{proposalId}/{userId}")
+    @GetMapping("/{proposalId}/reviewer/{reviewerId}/accepted")
     @Operation(
             summary = "Accepted as Reviewer",
             description = "Accepted as Reviewer"
@@ -35,7 +39,7 @@ public class ProposalReviewerController {
         return proposalReviewerService.acceptAsReviewer(proposalId, userId);
     }
 
-    @GetMapping("/rejected/{proposalId}/{userId}")
+    @GetMapping("/{proposalId}/reviewer/{reviewerId}/reject")
     @Operation(
             summary = "Rejected as Reviewer",
             description = "Rejected as Reviewer"

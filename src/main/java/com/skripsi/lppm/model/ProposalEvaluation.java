@@ -1,5 +1,6 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,9 +17,11 @@ public class ProposalEvaluation {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     private Proposal proposal;
 
     @ManyToOne
+    @JsonIgnore
     private User reviewer;
 
     private String waktuPelaksanaan;

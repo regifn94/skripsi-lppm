@@ -1,8 +1,6 @@
 package com.skripsi.lppm.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 @ToString(exclude = {"proposals", "dosen", "student", "roles"})
 @Data
 @Entity
@@ -46,7 +47,7 @@ public class User {
     @JsonManagedReference("user-student")
     private Students student;
 
-    @JsonBackReference
     @OneToMany(mappedBy = "ketuaPeneliti", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Proposal> proposals = new ArrayList<>();
 }
