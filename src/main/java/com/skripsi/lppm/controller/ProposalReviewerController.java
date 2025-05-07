@@ -21,6 +21,15 @@ public class ProposalReviewerController {
         return proposalReviewerService.setAsReviewer(proposalId, request);
     }
 
+    @GetMapping
+    @Operation(
+            summary = "List Proposal by reviewer id",
+            description = "only show data by roles reviewer"
+    )
+    public ResponseEntity<?> getAllProposal(){
+        return proposalReviewerService.getAllProposal();
+    }
+
     @GetMapping("/reviewer/{reviewerId}")
     @Operation(
             summary = "List Proposal by reviewer id",
@@ -28,15 +37,6 @@ public class ProposalReviewerController {
     )
     public ResponseEntity<?> getListProposal(@PathVariable Long reviewerId){
         return proposalReviewerService.getListProposalByReviewerId(reviewerId);
-    }
-
-    @GetMapping("/{proposalId}/reviewer/{reviewerId}/accepted")
-    @Operation(
-            summary = "Accepted as Reviewer",
-            description = "Accepted as Reviewer"
-    )
-    public ResponseEntity<?> acceptedAsReviewer(@PathVariable Long proposalId, @PathVariable Long userId){
-        return proposalReviewerService.acceptAsReviewer(proposalId, userId);
     }
 
     @GetMapping("/{proposalId}/reviewer/{reviewerId}/reject")
@@ -48,9 +48,19 @@ public class ProposalReviewerController {
             @PathVariable Long proposalId,
             @PathVariable Long userId,
             @RequestBody ReviewerRejectedRequest request
-            ){
+    ){
         return proposalReviewerService.rejectedAsReviewer(proposalId, userId, request.getReason());
     }
+
+    @GetMapping("/{proposalId}/reviewer/{reviewerId}/accept")
+    @Operation(
+            summary = "Accepted as Reviewer",
+            description = "Accepted as Reviewer"
+    )
+    public ResponseEntity<?> acceptedAsReviewer(@PathVariable Long proposalId, @PathVariable Long reviewerId){
+        return proposalReviewerService.acceptAsReviewer(proposalId, reviewerId);
+    }
+
 
     @PostMapping("/form-evaluation")
     public ResponseEntity<?> submitFormEvaluation(@RequestBody ProposalEvaluationRequest request){

@@ -38,7 +38,8 @@ public class ProposalEvaluation {
     private Integer nilaiTargetLuaran;                // Bobot 10
     private Integer nilaiKompetensiDanTugas;          // Bobot 10
     private Integer nilaiPenulisan;                   // Bobot 5
-    private Integer totalNilai;
+    private Double totalNilai;
+    private String keputusan;
 
     @Column(columnDefinition = "TEXT")
     private String komentar;

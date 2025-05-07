@@ -24,6 +24,9 @@ public class ProposalEvaluationRequest {
     private Integer nilaiTargetLuaran;
     private Integer nilaiKompetensiDanTugas;
     private Integer nilaiPenulisan;
+    private Double totalNilai;
+
+    private String keputusan;
 
     private String komentar;
 

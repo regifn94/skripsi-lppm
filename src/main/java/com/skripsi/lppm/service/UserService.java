@@ -218,70 +218,75 @@ public class UserService {
     }
 
     public ResponseEntity<?> updateUserWithProfile(CreateUserWithProfileRequest request) {
-        if (request.getId() == null) {
-            throw new RuntimeException("User ID is required for update");
-        }
+        try {
+            if (request.getId() == null) {
+                throw new RuntimeException("User ID is required for update");
+            }
 
-        User user = userRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getId()));
+            User user = userRepository.findById(request.getId())
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getId()));
 
-        user.setUserType(request.getUserType());
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+            user.setUserType(request.getUserType());
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
 
-        // Update Roles
-        Set<Role> roleSet = new HashSet<>();
-        for (String roleName : request.getRoles()) {
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-            roleSet.add(role);
-        }
-        user.setRoles(roleSet);
+            // Update Roles
+            Set<Role> roleSet = new HashSet<>();
+            for (String roleName : request.getRoles()) {
+                Role role = roleRepository.findByName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                roleSet.add(role);
+            }
+            user.setRoles(roleSet);
 
-        User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
 
-        // Update Dosen Profile if exists
-        if (request.getUserType().contains("DOSEN_STAFF") && request.getDosen() != null) {
-            CreateUserWithProfileRequest.DosenRequest dosenReq = request.getDosen();
-            Faculty faculty = facultyRepository.findById(dosenReq.getFacultyId())
-                    .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + dosenReq.getFacultyId()));
+            // Update Dosen Profile if exists
+            if (request.getUserType().contains("DOSEN_STAFF") && request.getDosen() != null) {
+                CreateUserWithProfileRequest.DosenRequest dosenReq = request.getDosen();
+                var userFaculty = dosenRepository.findByUserId(request.getId());
+                Faculty faculty = facultyRepository.findById(userFaculty.get().getFaculty().getId())
+                        .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + dosenReq.getFacultyId()));
 
-            Dosen dosen = dosenRepository.findByUserId(savedUser.getId())
-                    .orElse(new Dosen()); // kalau belum ada Dosen, buat baru
+                Dosen dosen = dosenRepository.findByUserId(savedUser.getId())
+                        .orElse(new Dosen()); // kalau belum ada Dosen, buat baru
 
-            dosen.setName(dosenReq.getName());
-            dosen.setNidn(dosenReq.getNidn());
-            dosen.setNik(dosenReq.getNik());
-            dosen.setFunctionalPosition(dosenReq.getFunctionalPosition());
-            dosen.setFaculty(faculty);
-            dosen.setUser(savedUser);
+                dosen.setName(dosenReq.getName());
+                dosen.setNidn(dosenReq.getNidn());
+                dosen.setNik(dosenReq.getNik());
+                dosen.setFunctionalPosition(dosenReq.getFunctionalPosition());
+                dosen.setFaculty(faculty);
+                dosen.setUser(savedUser);
 
-            dosenRepository.save(dosen);
-        }
+                dosenRepository.save(dosen);
+            }
 
-        // Update Student Profile if exists
-        if (request.getUserType().contains("STUDENT") && request.getStudent() != null) {
-            CreateUserWithProfileRequest.StudentRequest studentReq = request.getStudent();
+            // Update Student Profile if exists
+            if (request.getUserType().contains("STUDENT") && request.getStudent() != null) {
+                CreateUserWithProfileRequest.StudentRequest studentReq = request.getStudent();
 
-            Faculty faculty = facultyRepository.findById(studentReq.getFacultyId())
-                    .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + studentReq.getFacultyId()));
+                Faculty faculty = facultyRepository.findById(studentReq.getFacultyId())
+                        .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + studentReq.getFacultyId()));
 
-            ProgramStudy program = programStudyRepository.findById(studentReq.getProgramStudyId())
-                    .orElseThrow(() -> new RuntimeException("Program Study not found with ID: " + studentReq.getProgramStudyId()));
+                ProgramStudy program = programStudyRepository.findById(studentReq.getProgramStudyId())
+                        .orElseThrow(() -> new RuntimeException("Program Study not found with ID: " + studentReq.getProgramStudyId()));
 
-            Students student = studentRepository.findByUserId(savedUser.getId())
-                    .orElse(new Students()); // kalau belum ada Student, buat baru
+                Students student = studentRepository.findByUserId(savedUser.getId())
+                        .orElse(new Students()); // kalau belum ada Student, buat baru
 
-            student.setName(studentReq.getName());
-            student.setNim(studentReq.getNim());
-            student.setFaculty(faculty);
+                student.setName(studentReq.getName());
+                student.setNim(studentReq.getNim());
+                student.setFaculty(faculty);
 //            student.setProgramStudy(program);
-            student.setUser(savedUser);
+                student.setUser(savedUser);
 
-            studentRepository.save(student);
+                studentRepository.save(student);
+            }
+
+            return ResponseEntity.ok("User updated successfully");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
-
-        return ResponseEntity.ok("User updated successfully");
     }
 
     public ResponseEntity<?> getUserWithRoleReviewer(Long dekanId){

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface ProposalReviewerRepository extends JpaRepository<ProposalReviewer, Long> {
     Optional<ProposalReviewer> findByProposalIdAndReviewerId(Long proposalId, Long reviewerId);
+    List<ProposalReviewer> findByProposalId(Long proposalId);
 
     List<ProposalReviewer> findByReviewerId(Long reviewerId);
 

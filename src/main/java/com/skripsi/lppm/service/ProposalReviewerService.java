@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -67,30 +69,20 @@ public class ProposalReviewerService {
         }
     }
 
-    public ResponseEntity<?> accepted(Long proposalId, Long reviewerId) {
+    public ResponseEntity<?> getAllProposal(){
         try {
-            Proposal proposal = proposalRepository.findById(proposalId)
-                    .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
-            User reviewer = userRepository.findById(reviewerId)
-                    .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
-
-            ProposalReviewer pr = new ProposalReviewer();
-            pr.setProposal(proposal);
-            pr.setReviewer(reviewer);
-            pr.setAssignedAt(LocalDateTime.now());
-            pr.setStatus(StatusApproval.ACCEPTED);
-
-            reviewerRepository.save(pr);
-
-            notificationHelper.sendNotification(reviewer,
-                    "Anda ditunjuk untuk mereview proposal: " + proposal.getJudul(),
-                    "ReviewProposal", proposalId);
-            return ResponseEntity.ok().build();
+            var reviewers = reviewerRepository.findAll();
+            Set<Long> proposalIds = new HashSet<>();
+            for (var reviewer : reviewers) {
+                proposalIds.add(reviewer.getProposal().getId());
+            }
+            List<Long> ids = new ArrayList<>(proposalIds);
+            var proposals = proposalRepository.findByIdIn(ids);
+            return ResponseEntity.status(HttpStatus.OK).body(proposals);
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error : " + e.getMessage());
         }
     }
-
     public ResponseEntity<?> getListProposalByReviewerId(Long reviewerId){
         try {
             var reviewers = reviewerRepository.findByReviewerId(reviewerId);
@@ -140,14 +132,26 @@ public class ProposalReviewerService {
             ProposalReviewer reviewer = reviewerRepository.findByProposalIdAndReviewerId(proposalId, reviewerId)
                     .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
 
+            // Set reviewer ini menjadi accepted
             reviewer.setStatus(StatusApproval.ACCEPTED);
             reviewerRepository.save(reviewer);
+
+            // Ambil semua reviewer untuk proposal ini
+            List<ProposalReviewer> allReviewers = reviewerRepository.findByProposalId(proposalId);
+
+            // Cek apakah semua reviewer sudah ACCEPTED
+            boolean allAccepted = allReviewers.stream()
+                    .allMatch(r -> r.getStatus() == StatusApproval.ACCEPTED);
+
             var proposalOpt = proposalRepository.findById(proposalId);
             Long facultyId = 0L;
+
             if (proposalOpt.isPresent()) {
                 var proposal = proposalOpt.get();
-                proposal.setStatus(ProposalStatus.REVIEW_IN_PROGRESS.toString());
-                proposalRepository.save(proposal);
+                if (allAccepted) {
+                    proposal.setStatus(ProposalStatus.REVIEW_IN_PROGRESS.toString());
+                    proposalRepository.save(proposal);
+                }
                 facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
             }
 
@@ -157,11 +161,13 @@ public class ProposalReviewerService {
                         "Reviewer menerima undangan untuk proposal: " + reviewer.getProposal().getJudul(),
                         "ReviewProposal", proposalId);
             }
+
             return ResponseEntity.ok().build();
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
     }
+
     public ResponseEntity<?> inputEvaluation(ProposalEvaluationRequest request) {
         try {
             Proposal proposal = proposalRepository.findById(request.getProposalId())
@@ -182,6 +188,8 @@ public class ProposalReviewerService {
             evaluation.setNilaiPenulisan(request.getNilaiPenulisan());
             evaluation.setDanaDiusulkan(request.getDanaDiusulkan());
             evaluation.setTanggalEvaluasi(request.getTanggalEvaluasi());
+            evaluation.setTotalNilai(request.getTotalNilai());
+            evaluation.setKeputusan(request.getKeputusan());
 
             var proposalEvaluation = proposalEvaluationRepository.save(evaluation);
             return ResponseEntity.ok(proposalEvaluation);
@@ -268,6 +276,7 @@ public class ProposalReviewerService {
 
     public ResponseEntity<?> deanApproveProposal(Long proposalId){
         var proposalOpt = proposalRepository.findById(proposalId);
+
         if(proposalOpt.isPresent()){
             var proposal = proposalOpt.get();
             proposal.setApprovedByDean(true);
