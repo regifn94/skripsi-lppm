@@ -76,6 +76,11 @@ public class ProposalController {
         proposalService.rejectedMembers(proposalId, userId);
         return ResponseEntity.ok("Berhasil menolak sebagai anggota proposal.");
     }
+
+    @PutMapping("/{proposalId}/update-status/{status}")
+    public ResponseEntity<?> updateStatusProposal(@PathVariable Long proposalId, @RequestParam String status){
+        return proposalService.updateStatus(proposalId, status);
+    }
 //
 //    @PostMapping("/{proposalId}/add-reviewer")
 //    public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @io.swagger.v3.oas.annotations.parameters.RequestBody ReviewerAddRequest request){

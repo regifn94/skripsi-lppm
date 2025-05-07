@@ -11,7 +11,9 @@ import com.skripsi.lppm.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.stomp.ReactorNettyTcpStompClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -328,6 +330,20 @@ public class ProposalService {
             return updatedProposal;
         }catch (Exception e){
             throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> updateStatus(Long proposalId, String status){
+        try{
+            var proposalOpt = proposalRepository.findById(proposalId);
+            if(proposalOpt.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proposal not found");
+            }
+            var proposal = proposalOpt.get();
+            proposal.setStatus(status);
+            return ResponseEntity.status(HttpStatus.OK).body(proposalRepository.save(proposal));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
     }
 }
