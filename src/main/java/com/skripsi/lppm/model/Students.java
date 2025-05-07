@@ -1,6 +1,7 @@
 package com.skripsi.lppm.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,5 +37,6 @@ public class Students {
     @OneToOne
     @JoinColumn(name = "user_id")
     @JsonBackReference("user-student")
+//    @JsonIgnore
     private User user;
 }
