@@ -29,4 +29,6 @@ public class ProposalReviewer {
     private String reason;
 
     private LocalDateTime assignedAt;
+
+    private Boolean isEvaluated = false;
 }

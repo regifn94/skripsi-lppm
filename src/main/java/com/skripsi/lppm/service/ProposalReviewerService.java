@@ -187,6 +187,17 @@ public class ProposalReviewerService {
             evaluation.setTotalNilai(request.getTotalNilai());
             evaluation.setTanggalEvaluasi(new Date().toString());
 
+            int totalReviewer = proposal.getProposalReviewer().size();
+
+            // Hitung jumlah evaluasi yang sudah masuk
+            int totalEvaluasi = proposalEvaluationRepository.countByProposalId(proposal.getId());
+
+            // Jika jumlah evaluasi sama dengan jumlah reviewer, update status proposal
+            if (totalReviewer == totalEvaluasi) {
+                proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+                proposalRepository.save(proposal);
+            }
+
             var proposalEvaluation = proposalEvaluationRepository.save(evaluation);
             return ResponseEntity.ok(proposalEvaluation);
         }catch (Exception e){
@@ -248,7 +259,7 @@ public class ProposalReviewerService {
                 facultyHead.setNotes(request.getNotes());
                 facultyHead.setReviewedAt(LocalDateTime.now());
 
-                proposal.setStatus(ProposalStatus.WAITING_DEAN_APPROVAL.name());
+                proposal.setStatus(ProposalStatus.REVIEW_IN_PROGRESS.name());
                 proposalRepository.save(proposal);
                 proposalReviewByFacultyHeadRepository.save(facultyHead);
 

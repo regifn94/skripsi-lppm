@@ -18,7 +18,7 @@ public class ProposalEvaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "proposal_id", nullable = false)
     @JsonBackReference
     private Proposal proposal;
@@ -44,6 +44,4 @@ public class ProposalEvaluation {
     private String komentar;
 
     private String tanggalEvaluasi;
-
-    private Boolean isEvaluated;
 }

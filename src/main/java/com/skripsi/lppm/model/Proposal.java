@@ -58,9 +58,9 @@ public class Proposal {
     @JsonManagedReference
     private ProposalReviewByFacultyHead reviewByFacultyHead;
 
-    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private ProposalEvaluation proposalEvaluation;
+    private List<ProposalEvaluation> proposalEvaluation;
 
     @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference

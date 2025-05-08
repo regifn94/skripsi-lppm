@@ -134,10 +134,10 @@ public class ProposalService {
                 notificationHelper.sendNotification(facultyResearchCoordinator,
                         "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
                         "Proposal", proposal.getId());
+                proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
+                proposalRepository.save(proposal);
             }
 
-            proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
-            proposalRepository.save(proposal);
         }
     }
 

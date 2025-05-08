@@ -49,7 +49,7 @@ public class ProposalDecisionService {
             decision.setDecidedBy(decidedByUser.get());
             decision.setDecisionDate(LocalDateTime.now());
 
-            proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+            proposal.setStatus(ProposalStatus.WAITING_DEAN_APPROVAL.name());
             proposal.setProposalDecision(decision);
             ProposalDecision savedDecision = proposalDecisionRepository.save(decision);
             return ResponseEntity.ok(savedDecision);
