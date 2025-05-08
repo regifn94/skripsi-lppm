@@ -50,13 +50,21 @@ public class Proposal {
     @JsonManagedReference
     private List<ProposalMember> proposalMember = new ArrayList<>();
 
-    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ProposalReviewer> proposalReviewer = new ArrayList<>();
 
-    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private ProposalReviewByFacultyHead reviewByFacultyHead;
+
+    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private ProposalEvaluation proposalEvaluation;
+
+    @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private ProposalDecision proposalDecision;
 
     private Boolean approvedByDean = false;
 

@@ -1,9 +1,7 @@
 package com.skripsi.lppm.controller;
 
-import com.skripsi.lppm.dto.FacultyHeadReviewRequest;
-import com.skripsi.lppm.dto.ProposalEvaluationRequest;
-import com.skripsi.lppm.dto.ReviewerAddRequest;
-import com.skripsi.lppm.dto.ReviewerRejectedRequest;
+import com.skripsi.lppm.dto.*;
+import com.skripsi.lppm.service.ProposalDecisionService;
 import com.skripsi.lppm.service.ProposalReviewerService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/proposal-review")
 public class ProposalReviewerController {
     private final ProposalReviewerService proposalReviewerService;
+    private final ProposalDecisionService proposalDecisionService;
 
     @PostMapping("/{proposalId}/add-reviewer")
     public ResponseEntity<?> setReviewer(@PathVariable Long proposalId, @RequestBody ReviewerAddRequest request){
@@ -67,6 +66,11 @@ public class ProposalReviewerController {
         return proposalReviewerService.inputEvaluation(request);
     }
 
+    @GetMapping("/list-evaluation")
+    public ResponseEntity<?> getListProposalEvaluation(){
+        return proposalReviewerService.getListProposalEvaluation();
+    }
+
     /**
      * ketua penelitian fakultas akan menilai (reject / approved)
      * */
@@ -91,5 +95,10 @@ public class ProposalReviewerController {
     @GetMapping("/dean-approve")
     public ResponseEntity<?> deanAcceptedApproval(@PathVariable Long proposalId){
         return proposalReviewerService.deanApproveProposal(proposalId);
+    }
+
+    @PostMapping("/make-decision")
+    public ResponseEntity<?> makeDecision(@RequestBody ProposalDecisionRequest request) {
+        return proposalDecisionService.makeDecision(request);
     }
 }

@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -186,16 +183,19 @@ public class ProposalReviewerService {
             evaluation.setNilaiTargetLuaran(request.getNilaiTargetLuaran());
             evaluation.setNilaiKompetensiDanTugas(request.getNilaiKompetensiDanTugas());
             evaluation.setNilaiPenulisan(request.getNilaiPenulisan());
-            evaluation.setDanaDiusulkan(request.getDanaDiusulkan());
             evaluation.setTanggalEvaluasi(request.getTanggalEvaluasi());
             evaluation.setTotalNilai(request.getTotalNilai());
-            evaluation.setKeputusan(request.getKeputusan());
+            evaluation.setTanggalEvaluasi(new Date().toString());
 
             var proposalEvaluation = proposalEvaluationRepository.save(evaluation);
             return ResponseEntity.ok(proposalEvaluation);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error " + e.getMessage());
         }
+    }
+
+    public ResponseEntity<?> getListProposalEvaluation(){
+        return ResponseEntity.ok(proposalEvaluationRepository.findAll());
     }
 
     // ketua penelitian fakultas rejected proposal

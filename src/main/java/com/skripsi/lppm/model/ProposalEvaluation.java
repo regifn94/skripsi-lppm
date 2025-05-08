@@ -1,6 +1,8 @@
 package com.skripsi.lppm.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,19 +18,17 @@ public class ProposalEvaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "proposal_id", nullable = false)
+    @JsonBackReference
     private Proposal proposal;
 
     @ManyToOne
-    @JsonIgnore
+    @JoinColumn(name = "reviewer_id", nullable = false)
+    @JsonManagedReference
     private User reviewer;
 
-    private String waktuPelaksanaan;
-    private String sumberDana;
-    private String danaDiusulkan;
     private String danaDisetujui;
-    private String luaranPenelitian;
 
     private Integer nilaiKualitasDanKebaruan;         // Bobot 25
     private Integer nilaiRoadmap;                     // Bobot 15
@@ -39,10 +39,11 @@ public class ProposalEvaluation {
     private Integer nilaiKompetensiDanTugas;          // Bobot 10
     private Integer nilaiPenulisan;                   // Bobot 5
     private Double totalNilai;
-    private String keputusan;
 
     @Column(columnDefinition = "TEXT")
     private String komentar;
 
     private String tanggalEvaluasi;
+
+    private Boolean isEvaluated;
 }
