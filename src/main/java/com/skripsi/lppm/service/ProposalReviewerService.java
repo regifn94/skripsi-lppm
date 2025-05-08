@@ -107,7 +107,7 @@ public class ProposalReviewerService {
             Long facultyId = 0L;
             if (proposalOpt.isPresent()) {
                 var proposal = proposalOpt.get();
-                proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+                proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
                 proposalRepository.save(proposal);
                 facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
             }
@@ -194,7 +194,7 @@ public class ProposalReviewerService {
 
             // Jika jumlah evaluasi sama dengan jumlah reviewer, update status proposal
             if (totalReviewer == totalEvaluasi) {
-                proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+                proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
                 proposalRepository.save(proposal);
             }
 
@@ -226,7 +226,7 @@ public class ProposalReviewerService {
                 facultyHead.setNotes(request.getNotes());
                 facultyHead.setReviewedAt(LocalDateTime.now());
 
-                proposal.setStatus(ProposalStatus.REVIEW_COMPLETE.name());
+                proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
                 proposalRepository.save(proposal);
                 proposalReviewByFacultyHeadRepository.save(facultyHead);
                 var ketuaPenelitian = proposal.getKetuaPeneliti();
@@ -259,7 +259,8 @@ public class ProposalReviewerService {
                 facultyHead.setNotes(request.getNotes());
                 facultyHead.setReviewedAt(LocalDateTime.now());
 
-                proposal.setStatus(ProposalStatus.REVIEW_IN_PROGRESS.name());
+                proposal.setStatus(ProposalStatus.WAITING_DEAN_APPROVAL.name());
+                proposal.setIsEvaluated(true);
                 proposalRepository.save(proposal);
                 proposalReviewByFacultyHeadRepository.save(facultyHead);
 
@@ -290,6 +291,7 @@ public class ProposalReviewerService {
 
         if(proposalOpt.isPresent()){
             var proposal = proposalOpt.get();
+            proposal.setStatus(ProposalStatus.WAITING_LPPM_APPROVAL.name());
             proposal.setApprovedByDean(true);
             proposalRepository.save(proposal);
         }

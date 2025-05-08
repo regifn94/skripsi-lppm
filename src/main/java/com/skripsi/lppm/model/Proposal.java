@@ -66,6 +66,8 @@ public class Proposal {
     @JsonManagedReference
     private ProposalDecision proposalDecision;
 
+    private Boolean isEvaluated = false;
+
     private Boolean approvedByDean = false;
 
     @Transient

@@ -92,7 +92,7 @@ public class ProposalReviewerController {
         return proposalReviewerService.acceptedProposal(request);
     }
 
-    @GetMapping("/dean-approve")
+    @GetMapping("/dean-approve/{proposalId}")
     public ResponseEntity<?> deanAcceptedApproval(@PathVariable Long proposalId){
         return proposalReviewerService.deanApproveProposal(proposalId);
     }
