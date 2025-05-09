@@ -187,13 +187,19 @@ public class ProposalReviewerService {
             evaluation.setTotalNilai(request.getTotalNilai());
             evaluation.setTanggalEvaluasi(new Date().toString());
 
-            int totalReviewer = proposal.getProposalReviewer().size();
+            var proposalReviewer = reviewerRepository.findByProposalIdAndReviewerId(request.getProposalId(), request.getProposalId());
+            if(proposalReviewer.isPresent()){
+                proposalReviewer.get().setIsEvaluated(true);
+                reviewerRepository.save(proposalReviewer.get());
+            }
+
+            var totalReviewer = reviewerRepository.findAllByProposal_IdAndStatus(request.getProposalId(), StatusApproval.ACCEPTED);
 
             // Hitung jumlah evaluasi yang sudah masuk
             int totalEvaluasi = proposalEvaluationRepository.countByProposalId(proposal.getId());
 
             // Jika jumlah evaluasi sama dengan jumlah reviewer, update status proposal
-            if (totalReviewer == totalEvaluasi) {
+            if (totalReviewer.size() == totalEvaluasi) {
                 proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
                 proposalRepository.save(proposal);
             }
