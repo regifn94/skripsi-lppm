@@ -245,6 +245,9 @@ public class UserService {
             if (request.getUserType().contains("DOSEN_STAFF") && request.getDosen() != null) {
                 CreateUserWithProfileRequest.DosenRequest dosenReq = request.getDosen();
                 var userFaculty = dosenRepository.findByUserId(request.getId());
+                if(userFaculty.isEmpty()){
+                    userFaculty = dosenRepository.findById(dosenReq.getFacultyId());
+                }
                 Faculty faculty = facultyRepository.findById(userFaculty.get().getFaculty().getId())
                         .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + dosenReq.getFacultyId()));
 
@@ -268,8 +271,8 @@ public class UserService {
                 Faculty faculty = facultyRepository.findById(studentReq.getFacultyId())
                         .orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + studentReq.getFacultyId()));
 
-                ProgramStudy program = programStudyRepository.findById(studentReq.getProgramStudyId())
-                        .orElseThrow(() -> new RuntimeException("Program Study not found with ID: " + studentReq.getProgramStudyId()));
+//                ProgramStudy program = programStudyRepository.findById(studentReq.getProgramStudyId())
+//                        .orElseThrow(() -> new RuntimeException("Program Study not found with ID: " + studentReq.getProgramStudyId()));
 
                 Students student = studentRepository.findByUserId(savedUser.getId())
                         .orElse(new Students()); // kalau belum ada Student, buat baru

@@ -108,36 +108,45 @@ public class ProposalService {
         return updatedProposal;
     }
 
-    public void approvedMembers(Long proposalId, Long userId) {
-        ProposalMember member = proposalMemberRepository.findByProposalIdAndUserId(proposalId, userId)
-                .orElseThrow(() -> new RuntimeException("Anggota tidak ditemukan"));
+    public ResponseEntity<?> approvedMembers(Long proposalId, Long userId) {
+        try {
+            ProposalMember member = proposalMemberRepository.findByProposalIdAndUserId(proposalId, userId)
+                    .orElseThrow(() -> new RuntimeException("Anggota tidak ditemukan"));
 
-        member.setStatus(StatusApproval.APPROVED);
-        proposalMemberRepository.save(member);
+            member.setStatus(StatusApproval.APPROVED);
+            List<ProposalMember> allMembers = proposalMemberRepository.findByProposalId(proposalId);
+            boolean allApproved = allMembers.stream()
+                    .allMatch(a -> a.getStatus() == StatusApproval.APPROVED);
 
-        List<ProposalMember> allMembers = proposalMemberRepository.findByProposalId(proposalId);
-        boolean allApproved = allMembers.stream()
-                .allMatch(a -> a.getStatus() == StatusApproval.APPROVED);
+            if (allApproved) {
+                Proposal proposal = member.getProposal();
 
-        if (allApproved) {
-            Proposal proposal = member.getProposal();
-
-            notificationHelper.sendNotification(proposal.getKetuaPeneliti(),
-                    "Semua anggota telah menyetujui. Proposal akan dikirim ke Ketua Penelitian Fakultas.",
-                    "Proposal", proposal.getId());
-
-            Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
-
-            List<User> facultyResearchCoordinators = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
-
-            for (User facultyResearchCoordinator : facultyResearchCoordinators) {
-                notificationHelper.sendNotification(facultyResearchCoordinator,
-                        "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
+                notificationHelper.sendNotification(proposal.getKetuaPeneliti(),
+                        "Semua anggota telah menyetujui. Proposal akan dikirim ke Ketua Penelitian Fakultas.",
                         "Proposal", proposal.getId());
-                proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
-                proposalRepository.save(proposal);
-            }
 
+                Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
+
+                List<User> facultyResearchCoordinators = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
+
+                if (facultyResearchCoordinators.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ketua penelitian fakultas belum ada, tolong di assign ketua penelitian fakultas terlebih dahulu");
+                }
+
+                for (User facultyResearchCoordinator : facultyResearchCoordinators) {
+                    notificationHelper.sendNotification(facultyResearchCoordinator,
+                            "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
+                            "Proposal", proposal.getId());
+                    proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
+                }
+
+                proposalRepository.save(proposal);
+                proposalMemberRepository.save(member);
+                return ResponseEntity.ok().build();
+            }
+            return ResponseEntity.noContent().build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error : " + e.getMessage());
         }
     }
 

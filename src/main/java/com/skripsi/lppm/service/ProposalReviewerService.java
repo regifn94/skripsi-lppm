@@ -284,7 +284,7 @@ public class ProposalReviewerService {
                             "ReviewProposal", proposal.getId());
                 }
 
-                return ResponseEntity.status(HttpStatus.OK).body("success rejected proposal");
+                return ResponseEntity.status(HttpStatus.OK).body("success accepted proposal");
             }
             return ResponseEntity.status(HttpStatus.OK).body("proposal not found");
         }catch (Exception e){
