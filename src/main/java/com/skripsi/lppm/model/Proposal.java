@@ -70,6 +70,8 @@ public class Proposal {
 
     private Boolean approvedByDean = false;
 
+    private Boolean approvedByLppm = false;
+
     @Transient
     private String fileBase64;
 

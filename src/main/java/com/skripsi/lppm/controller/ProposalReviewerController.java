@@ -97,6 +97,10 @@ public class ProposalReviewerController {
         return proposalReviewerService.deanApproveProposal(proposalId);
     }
 
+    @GetMapping("/lppm-approve/{proposalId}")
+    public ResponseEntity<?> lppmAcceptedApproval(@PathVariable Long proposalId){
+        return proposalReviewerService.approvedByLppm(proposalId);
+    }
     @PostMapping("/make-decision")
     @Operation(
             summary = "Make decision from Dean",

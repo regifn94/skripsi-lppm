@@ -31,7 +31,7 @@ public class NotificationHelper {
             notificationRepository.save(notification);
             notificationWebSocketController.sendNotificationToUser(user.getId(), notification);
         }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException("error : " + e.getMessage());
         }
     }
 }

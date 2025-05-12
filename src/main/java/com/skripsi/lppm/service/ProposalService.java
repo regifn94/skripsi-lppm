@@ -220,9 +220,9 @@ public class ProposalService {
                 }
 
                 proposalRepository.save(proposal);
-                proposalMemberRepository.save(member);
                 return ResponseEntity.status(HttpStatus.OK).body("Berhasil di approved");
             }
+            proposalMemberRepository.save(member);
             return ResponseEntity.noContent().build();
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error : " + e.getMessage());

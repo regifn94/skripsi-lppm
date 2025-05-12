@@ -186,7 +186,7 @@ public class ProposalReviewerService {
             evaluation.setTotalNilai(request.getTotalNilai());
             evaluation.setTanggalEvaluasi(new Date().toString());
 
-            var proposalReviewer = reviewerRepository.findByProposalIdAndReviewerId(request.getProposalId(), request.getProposalId());
+            var proposalReviewer = reviewerRepository.findByProposalIdAndReviewerId(request.getProposalId(), request.getReviewerId());
             if(proposalReviewer.isPresent()){
                 proposalReviewer.get().setIsEvaluated(true);
                 reviewerRepository.save(proposalReviewer.get());
@@ -300,18 +300,39 @@ public class ProposalReviewerService {
         var proposal = proposalOpt.get();
         proposal.setStatus(ProposalStatus.WAITING_LPPM_APPROVAL.name());
         proposal.setApprovedByDean(true);
-        proposalRepository.save(proposal);
         var ketuaLppms = userRepository.findByRoles_Name("KETUA_LPPM");
         if(ketuaLppms.isEmpty()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Belum memiliki ketua LPPM");
         }
         for(var ketuaLppm : ketuaLppms){
             notificationHelper.sendNotification(ketuaLppm,
-                    "Anda memiliki notifikasi lembar pengesahan: " + proposal,
+                    "Anda memiliki notifikasi lembar pengesahan: " + proposal.getJudul(),
                     "proposals", proposalId);
         }
         proposalRepository.save(proposal);
         return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<?> approvedByLppm(Long proposalId){
+        try{
+            var proposalOpt = proposalRepository.findById(proposalId);
+
+            if(proposalOpt.isEmpty()){
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Proposal tidak ditemukan");
+            }
+            var proposal = proposalOpt.get();
+            proposal.setStatus(ProposalStatus.ONGOING.name());
+            proposal.setApprovedByLppm(true);
+            var savedProposal = proposalRepository.save(proposal);
+            var ketuaPenelitiFakultas = proposal.getKetuaPeneliti();
+            var user = userRepository.findById(ketuaPenelitiFakultas.getId());
+            notificationHelper.sendNotification(user.get(),
+                        "Proposal anda yang berjudul : " + proposal.getJudul() + " telah diterima.",
+                        "proposals", proposalId);
+            return ResponseEntity.ok().body(savedProposal);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
+        }
     }
 
     public ResponseEntity<?> getProposal(Long proposalId){
