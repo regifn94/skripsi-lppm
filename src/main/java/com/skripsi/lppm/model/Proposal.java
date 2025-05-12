@@ -44,27 +44,27 @@ public class Proposal {
 
     @ManyToOne
     @JoinColumn(name = "ketua_peneliti_id", nullable = true)
-    private User ketuaPeneliti;
+    private User ketuaPeneliti; // ada user
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<ProposalMember> proposalMember = new ArrayList<>();
+    private List<ProposalMember> proposalMember = new ArrayList<>(); // ada user
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<ProposalReviewer> proposalReviewer = new ArrayList<>();
+    private List<ProposalReviewer> proposalReviewer = new ArrayList<>(); // ada user
 
     @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private ProposalReviewByFacultyHead reviewByFacultyHead;
+    private ProposalReviewByFacultyHead reviewByFacultyHead; // ada user
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<ProposalEvaluation> proposalEvaluation;
+    private List<ProposalEvaluation> proposalEvaluation; // ada user
 
     @OneToOne(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private ProposalDecision proposalDecision;
+    private ProposalDecision proposalDecision; // ada user
 
     private Boolean isEvaluated = false;
 

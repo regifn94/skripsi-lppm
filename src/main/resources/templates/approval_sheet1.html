@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xml:lang="id" lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Lembar Pengesahan Proposal Penelitian</title>
+    <style type="text/css">
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            background-color: #fdfdfd;
+        }
+
+        .a4-container {
+            width: 185mm;
+            margin: 12mm auto;
+            background-color: #fff;
+            padding: 10mm;
+            box-shadow: 0 0 5mm rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+
+        .university-name {
+            font-weight: bold;
+            font-size: 16pt;
+        }
+
+        .university-address,
+        .university-contact,
+        .university-website {
+            font-size: 10pt;
+        }
+
+        .document-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0;
+        }
+
+        .form-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .form-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: top;
+            font-size: 11pt;
+        }
+
+        .form-table .label-cell {
+            font-weight: bold;
+            width: 35%;
+            background-color: #f0f0f0;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 100px;
+        }
+
+        .column {
+            width: 45%;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+        }
+
+        .signature-block {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-space {
+            margin-top: 60px;
+            border-top: 1px solid black;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .top-margin {
+            margin-top: 40px;
+        }
+
+        .date-place {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 11pt;
+        }
+
+        .section-title {
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 0;
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+<div class="a4-container">
+    <div class="header">
+        <div>
+            <img th:src="${logoPath}" alt="Logo" style="width: 600px; height: auto;"/>
+        </div>
+    </div>
+
+    <div class="document-title">LEMBAR PENGESAHAN PROPOSAL PENELITIAN</div>
+
+    <table class="form-table">
+        <tr>
+            <td class="label-cell">Judul Proposal Penelitian</td>
+            <td th:text="${judul}">-</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="section-title">Identitas Peneliti (Ketua)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Nama Lengkap</td>
+            <td th:text="${namaKetua}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">NIK/NIDN</td>
+            <td th:text="${nikKetua}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Jabatan Fungsional/Golongan</td>
+            <td th:text="${jabatanKetua}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Fakultas / Program Studi</td>
+            <td th:text="${fakultasKetua}">-</td>
+        </tr>
+
+        <!-- Anggota Peneliti Dosen -->
+        <!-- Compact Anggota Dosen Section -->
+        <tr>
+            <td colspan="2" class="section-title">Anggota Peneliti Dosen</td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaDosen)}">
+            <td class="label-cell">Nama</td>
+            <td>
+                <span th:each="anggota,iter : ${anggotaDosen}">
+                    <span th:text="${anggota.nama}"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaDosen)}">
+            <td class="label-cell">NIK/NIDN</td>
+            <td>
+                <span th:each="anggota,iter : ${anggotaDosen}">
+                    <span th:text="${anggota.nik} ?: '-'"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaDosen)}">
+            <td class="label-cell">Jabatan</td>
+            <td>
+                <span th:each="anggota,iter : ${anggotaDosen}">
+                    <span th:text="${anggota.jabatan} ?: '-'"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaDosen)}">
+            <td class="label-cell">Prodi</td>
+            <td>
+                <span th:each="anggota,iter : ${anggotaDosen}">
+                    <span th:text="${anggota.prodi} ?: '-'"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(anggotaDosen)}">
+            <td colspan="2" style="text-align: center;">-</td>
+        </tr>
+
+        <!-- Compact Anggota Mahasiswa Section -->
+        <tr>
+            <td colspan="2" class="section-title">Anggota Peneliti Mahasiswa</td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaMahasiswa)}">
+            <td class="label-cell">Nama</td>
+            <td>
+                <span th:each="mhs,iter : ${anggotaMahasiswa}">
+                    <span th:text="${mhs.nama}"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaMahasiswa)}">
+            <td class="label-cell">NIM</td>
+            <td>
+                <span th:each="mhs,iter : ${anggotaMahasiswa}">
+                    <span th:text="${mhs.nim} ?: '-'"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${not #lists.isEmpty(anggotaMahasiswa)}">
+            <td class="label-cell">Prodi</td>
+            <td>
+                <span th:each="mhs,iter : ${anggotaMahasiswa}">
+                    <span th:text="${mhs.prodi} ?: '-'"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(anggotaMahasiswa)}">
+            <td colspan="2" style="text-align: center;">-</td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="section-title">Mitra (Jika Ada)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Nama Mitra</td>
+            <td th:text="${namaMitra}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Alamat</td>
+            <td th:text="${alamatMitra}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Penanggung Jawab</td>
+            <td th:text="${picMitra}">-</td>
+        </tr>
+
+        <tr>
+            <td class="label-cell">Waktu Pelaksanaan</td>
+            <td th:text="${waktuPelaksanaan}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Sumber Dana</td>
+            <td th:text="${sumberDana}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Dana yang Diusulkan (Rp)</td>
+            <td th:text="${danaYangDiUsulkan}">-</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Luaran Penelitian</td>
+            <td th:text="${luaranPenelitian}">-</td>
+        </tr>
+    </table>
+
+    <div class="date-place">Airmadidi, <span th:text="${#dates.format(#dates.createNow(), 'dd MMMM yyyy')}"></span></div>
+
+    <div class="signature-section">
+        <div class="column">
+            <p><strong>Ketua Peneliti</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p><span th:text="${namaKetua}"></span></p>
+            <p>Dekan</p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p>...................................</p>
+        </div>
+
+        <div class="column">
+            <p>Menyetujui,<br/><strong>Ketua Penelitian Fakultas</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p>...................................</p>
+            <p>Mengetahui,<br/><strong>Kepala LPPM Universitas Klabat</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p>...................................</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

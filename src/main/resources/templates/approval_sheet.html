@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml" xml:lang="id" lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Lembar Pengesahan Proposal Penelitian</title>
+    <style type="text/css">
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            background-color: #fdfdfd;
+        }
+        .a4-container {
+            width: 185mm;
+            margin: 12mm auto;
+            background-color: #fff;
+            padding: 10mm;
+            box-shadow: 0 0 5mm rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .university-name {
+            font-weight: bold;
+            font-size: 16pt;
+        }
+        .university-address,
+        .university-contact,
+        .university-website {
+            font-size: 10pt;
+        }
+        .document-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0;
+        }
+        .form-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .form-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: top;
+            font-size: 11pt;
+        }
+        .form-table .label-cell {
+            font-weight: bold;
+            width: 35%;
+            background-color: #f0f0f0;
+        }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 100px;
+        }
+
+        .column {
+            width: 45%;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+        }
+
+        .signature-block {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-space {
+            margin-top: 60px;
+            border-top: 1px solid black;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .top-margin {
+            margin-top: 40px;
+        }
+        .date-place {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 11pt;
+        }
+    </style>
+</head>
+<body>
+<div class="a4-container">
+    <div class="header">
+        <div>
+            <img th:src="${logoPath}" alt="Logo" style="width: 600px; height: auto;" />
+        </div>
+    </div>
+
+    <div class="document-title">LEMBAR PENGESAHAN PROPOSAL PENELITIAN</div>
+
+    <table class="form-table">
+        <tr>
+            <td class="label-cell">Judul Proposal Penelitian</td>
+            <td th:text="${judul}">-</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="section-title">Identitas Peneliti (Ketua)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Nama Lengkap</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">NIK/NIDN</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Jabatan Fungsional/Golongan</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Fakultas / Program Studi</td>
+            <td></td>
+        </tr>
+
+        <!-- Anggota Peneliti Dosen -->
+        <tr>
+            <td colspan="2" class="section-title">Anggota Peneliti Dosen</td>
+        </tr>
+        <tr th:each="anggota,iter : ${anggotaDosen}">
+            <td class="label-cell" th:text="'Nama ' + (iter.index + 1)">Nama</td>
+            <td th:text="${anggota.nama}">-</td>
+        </tr>
+        <tr th:each="anggota,iter : ${anggotaDosen}">
+            <td class="label-cell" th:text="'NIK/NIDN ' + (iter.index + 1)">NIK/NIDN</td>
+            <td th:text="${anggota.nik}">-</td>
+        </tr>
+        <tr th:each="anggota,iter : ${anggotaDosen}">
+            <td class="label-cell" th:text="'Jabatan ' + (iter.index + 1)">Jabatan</td>
+            <td th:text="${anggota.jabatan}">-</td>
+        </tr>
+        <tr th:each="anggota,iter : ${anggotaDosen}">
+            <td class="label-cell" th:text="'Prodi ' + (iter.index + 1)">Prodi</td>
+            <td th:text="${anggota.prodi}">-</td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="section-title">Anggota Peneliti Mahasiswa</td>
+        </tr>
+        <tr th:each="mhs,iter : ${anggotaMahasiswa}">
+            <td class="label-cell" th:text="'Nama ' + (iter.index + 1)">Nama</td>
+            <td th:text="${mhs.nama}">-</td>
+        </tr>
+        <tr th:each="mhs,iter : ${anggotaMahasiswa}">
+            <td class="label-cell" th:text="'NIM ' + (iter.index + 1)">NIM</td>
+            <td th:text="${mhs.nim}">-</td>
+        </tr>
+        <tr th:each="mhs,iter : ${anggotaMahasiswa}">
+            <td class="label-cell" th:text="'Prodi ' + (iter.index + 1)">Prodi</td>
+            <td th:text="${mhs.prodi}">-</td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="section-title">Mitra (Jika Ada)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Nama Mitra</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Alamat</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Penanggung Jawab</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td class="label-cell">Waktu Pelaksanaan</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Sumber Dana</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Dana yang Diusulkan (Rp)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Luaran Penelitian</td>
+            <td></td>
+        </tr>
+    </table>
+
+    <div class="date-place">Airmadidi, ......................</div>
+
+    <div class="signature-section">
+        <div class="column">
+            <p><strong>Ketua Peneliti</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p>Dekan</p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+        </div>
+
+        <div class="column">
+            <p>Menyetujui,<br/><strong>Ketua Penelitian Fakultas</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+            <p>Mengetahui,<br/><strong>Kepala LPPM Universitas Klabat</strong></p>
+            <div class="top-margin"></div>
+            <div class="signature-space"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -23,6 +23,11 @@ public class ProposalController {
     private final ProposalService proposalService;
     private final ProposalReviewerService proposalReviewerService;
 
+    @GetMapping("/find-by/{userId}")
+    public ResponseEntity<?> findProposalsById(@PathVariable Long userId){
+        return proposalService.findProposalsByUserId(userId);
+    }
+
     @GetMapping
     public ResponseEntity<?> getAll(){
         return proposalService.findAll();
@@ -67,8 +72,7 @@ public class ProposalController {
 
     @PostMapping("/{proposalId}/approve-member/{userId}")
     public ResponseEntity<?> approveSebagaiAnggota(@PathVariable Long proposalId, @PathVariable Long userId) {
-        proposalService.approvedMembers(proposalId, userId);
-        return ResponseEntity.ok("Berhasil approve sebagai anggota proposal.");
+        return proposalService.approvedMembers(proposalId, userId);
     }
 
     @PostMapping("/{proposalId}/reject-member/{userId}")

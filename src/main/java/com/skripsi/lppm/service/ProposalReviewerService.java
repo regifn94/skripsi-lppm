@@ -116,7 +116,7 @@ public class ProposalReviewerService {
             for (User ketua : ketuaList) {
                 notificationHelper.sendNotification(ketua,
                         "Reviewer menolak undangan untuk proposal: " + reviewer.getProposal().getJudul(),
-                        "ReviewProposal", proposalId);
+                        "proposals", proposalId);
             }
             return ResponseEntity.ok().build();
         }catch (Exception e){
@@ -183,7 +183,6 @@ public class ProposalReviewerService {
             evaluation.setNilaiTargetLuaran(request.getNilaiTargetLuaran());
             evaluation.setNilaiKompetensiDanTugas(request.getNilaiKompetensiDanTugas());
             evaluation.setNilaiPenulisan(request.getNilaiPenulisan());
-            evaluation.setTanggalEvaluasi(request.getTanggalEvaluasi());
             evaluation.setTotalNilai(request.getTotalNilai());
             evaluation.setTanggalEvaluasi(new Date().toString());
 
@@ -239,7 +238,7 @@ public class ProposalReviewerService {
 
                 notificationHelper.sendNotification(ketuaPenelitian,
                         "Proposal anda dengan judul " + proposal.getJudul() + "telah di tolak",
-                        "ReviewProposal", proposal.getId());
+                        "proposals", proposal.getId());
                 return ResponseEntity.status(HttpStatus.OK).body("success rejected proposal");
             }
             return ResponseEntity.status(HttpStatus.OK).body("proposal not found");
@@ -273,7 +272,7 @@ public class ProposalReviewerService {
                 var ketuaPenelitian = proposal.getKetuaPeneliti();
                 notificationHelper.sendNotification(ketuaPenelitian,
                         "Proposal anda dengan judul " + proposal.getJudul() + "telah di diterima",
-                        "ReviewProposal", proposal.getId());
+                        "reviews", proposal.getId());
 
                 Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
 
@@ -281,7 +280,7 @@ public class ProposalReviewerService {
                 for(var dean :deans ){
                     notificationHelper.sendNotification(dean,
                             "Proposal berjudul" + proposal.getJudul() + "membutuhkan persetujuan Anda.",
-                            "ReviewProposal", proposal.getId());
+                            "reviews", proposal.getId());
                 }
 
                 return ResponseEntity.status(HttpStatus.OK).body("success accepted proposal");
@@ -295,12 +294,39 @@ public class ProposalReviewerService {
     public ResponseEntity<?> deanApproveProposal(Long proposalId){
         var proposalOpt = proposalRepository.findById(proposalId);
 
-        if(proposalOpt.isPresent()){
-            var proposal = proposalOpt.get();
-            proposal.setStatus(ProposalStatus.WAITING_LPPM_APPROVAL.name());
-            proposal.setApprovedByDean(true);
-            proposalRepository.save(proposal);
+        if(proposalOpt.isEmpty()){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Proposal tidak ditemukan");
         }
+        var proposal = proposalOpt.get();
+        proposal.setStatus(ProposalStatus.WAITING_LPPM_APPROVAL.name());
+        proposal.setApprovedByDean(true);
+        proposalRepository.save(proposal);
+        var ketuaLppms = userRepository.findByRoles_Name("KETUA_LPPM");
+        if(ketuaLppms.isEmpty()){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Belum memiliki ketua LPPM");
+        }
+        for(var ketuaLppm : ketuaLppms){
+            notificationHelper.sendNotification(ketuaLppm,
+                    "Anda memiliki notifikasi lembar pengesahan: " + proposal,
+                    "proposals", proposalId);
+        }
+        proposalRepository.save(proposal);
         return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<?> getProposal(Long proposalId){
+        try {
+            var proposalOpt = proposalRepository.findById(proposalId);
+            if(proposalOpt.isPresent()){
+                var proposal = proposalOpt.get();
+                proposal.setStatus(ProposalStatus.WAITING_LPPM_APPROVAL.name());
+                proposal.setApprovedByDean(true);
+                proposalRepository.save(proposal);
+                return ResponseEntity.status(HttpStatus.OK).body("success");
+            }
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Data not found");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
+        }
     }
 }

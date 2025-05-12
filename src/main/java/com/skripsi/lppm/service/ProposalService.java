@@ -1,6 +1,7 @@
 package com.skripsi.lppm.service;
 
 import com.skripsi.lppm.dto.ProposalDTO;
+import com.skripsi.lppm.dto.ProposalResponseWithRole;
 import com.skripsi.lppm.helper.NotificationHelper;
 import com.skripsi.lppm.model.*;
 import com.skripsi.lppm.model.enums.ProposalStatus;
@@ -19,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +34,87 @@ public class ProposalService {
     private final ProposalMemberRepository proposalMemberRepository;
     private final NotificationHelper notificationHelper;
     private final ProposalReviewerRepository proposalReviewerRepository;
+    private final ProposalEvaluationRepository proposalEvaluationRepository;
+    private final ProposalDecisionRepository proposalDecisionRepository;
+    private final ProposalReviewByFacultyHeadRepository proposalReviewByFacultyHeadRepository;
+
+    public ResponseEntity<?> findProposalsByUserId(Long userId) {
+        try {
+            var userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User not found");
+            }
+
+            Map<Long, ProposalResponseWithRole> proposalRoleMap = new HashMap<>();
+
+            // Ketua Peneliti
+            var proposals = proposalRepository.findByKetuaPeneliti_Id(userId);
+            for (var proposal : proposals) {
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Ketua Peneliti Proposal id : " + proposal.getId());
+            }
+
+            // Anggota
+            var proposalMembers = proposalMemberRepository.findByUserId(userId);
+            for (var member : proposalMembers) {
+                var proposal = member.getProposal();
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Anggota Peneliti Proposal id : " + proposal.getId());
+            }
+
+            // Reviewer
+            var proposalReviewers = proposalReviewerRepository.findByReviewerId(userId);
+            for (var reviewer : proposalReviewers) {
+                var proposal = reviewer.getProposal();
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Reviewer Proposal Proposal id : " + proposal.getId());
+            }
+
+            // Reviewer Ketua Fakultas
+            var proposalReviewByFacultyHeads = proposalReviewByFacultyHeadRepository.findByReviewedById(userId);
+            for (var review : proposalReviewByFacultyHeads) {
+                var proposal = review.getProposal();
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Reviewer Ketua Fakultas Proposal id : " + proposal.getId());
+            }
+
+            // Evaluator
+            var proposalEvaluations = proposalEvaluationRepository.findByReviewerId(userId);
+            for (var evaluation : proposalEvaluations) {
+                var proposal = evaluation.getProposal();
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Evaluator Proposal id : " + proposal.getId());
+            }
+
+            // Pengambil Keputusan
+            var proposalDecisions = proposalDecisionRepository.findByDecidedBy_Id(userId);
+            for (var decision : proposalDecisions) {
+                var proposal = decision.getProposal();
+                proposalRoleMap
+                        .computeIfAbsent(proposal.getId(), id -> new ProposalResponseWithRole(proposal, new ArrayList<>()))
+                        .getRoles()
+                        .add("Pengambil Keputusan Proposal id : " + proposal.getId());
+            }
+
+            for(var proposal : proposals){
+
+            }
+
+            return ResponseEntity.ok(new ArrayList<>(proposalRoleMap.values()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
     public ResponseEntity<?> findAll(){
         return ResponseEntity.ok().body(
@@ -77,7 +156,7 @@ public class ProposalService {
 
         notificationHelper.sendNotification(proposal.getKetuaPeneliti(),
                 "Proposal Anda \"" + proposal.getJudul() + "\" telah " + (status == StatusPenelitian.ACCEPTED ? "DITERIMA" : "DITOLAK") +
-                        (reason != null ? ". Alasan: " + reason : ""), "Proposal", proposalId);
+                        (reason != null ? ". Alasan: " + reason : ""), "proposals", proposalId);
 
 
 
@@ -101,7 +180,7 @@ public class ProposalService {
             }
 
             if (targetUser != null) {
-                notificationHelper.sendNotification(targetUser, message, "Proposal", proposalId);
+                notificationHelper.sendNotification(targetUser, message, "proposals", proposalId);
             }
         }
 
@@ -123,7 +202,7 @@ public class ProposalService {
 
                 notificationHelper.sendNotification(proposal.getKetuaPeneliti(),
                         "Semua anggota telah menyetujui. Proposal akan dikirim ke Ketua Penelitian Fakultas.",
-                        "Proposal", proposal.getId());
+                        "proposals", proposal.getId());
 
                 Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
 
@@ -136,13 +215,13 @@ public class ProposalService {
                 for (User facultyResearchCoordinator : facultyResearchCoordinators) {
                     notificationHelper.sendNotification(facultyResearchCoordinator,
                             "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
-                            "Proposal", proposal.getId());
+                            "proposals", proposal.getId());
                     proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
                 }
 
                 proposalRepository.save(proposal);
                 proposalMemberRepository.save(member);
-                return ResponseEntity.ok().build();
+                return ResponseEntity.status(HttpStatus.OK).body("Berhasil di approved");
             }
             return ResponseEntity.noContent().build();
         }catch (Exception e){
@@ -226,7 +305,7 @@ public class ProposalService {
 
             notificationHelper.sendNotification(ketuaPeneliti,
                     "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
-                    "Proposal", savedProposal.getId());
+                    "proposals", savedProposal.getId());
 
             List<ProposalMember> members = new ArrayList<>();
 
@@ -242,7 +321,7 @@ public class ProposalService {
 
                     notificationHelper.sendNotification(dosen.getUser(),
                             "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
-                            "Proposal", savedProposal.getId());
+                            "proposals", savedProposal.getId());
                 }
             }
 
@@ -258,7 +337,7 @@ public class ProposalService {
 
                     notificationHelper.sendNotification(student.getUser(),
                             "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
-                            "Proposal", savedProposal.getId());
+                            "proposals", savedProposal.getId());
                 }
             }
 
@@ -315,7 +394,7 @@ public class ProposalService {
 
                     notificationHelper.sendNotification(dosen.getUser(),
                             "Anda ditambahkan sebagai anggota dosen dalam proposal (update): " + updatedProposal.getJudul(),
-                            "Proposal", updatedProposal.getId());
+                            "proposals", updatedProposal.getId());
                 }
             }
 
@@ -331,7 +410,7 @@ public class ProposalService {
 
                     notificationHelper.sendNotification(student.getUser(),
                             "Anda ditambahkan sebagai anggota mahasiswa dalam proposal (update): " + updatedProposal.getJudul(),
-                            "Proposal", updatedProposal.getId());
+                            "proposals", updatedProposal.getId());
                 }
             }
 
@@ -355,4 +434,6 @@ public class ProposalService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
     }
+
+
 }

@@ -98,7 +98,16 @@ public class ProposalReviewerController {
     }
 
     @PostMapping("/make-decision")
+    @Operation(
+            summary = "Make decision from Dean",
+            description = "Make decision from Dean"
+    )
     public ResponseEntity<?> makeDecision(@RequestBody ProposalDecisionRequest request) {
         return proposalDecisionService.makeDecision(request);
+    }
+
+    @GetMapping("/download-approval-sheet/{proposalId}")
+    public ResponseEntity<?> downloadApprovalSheet(@PathVariable Long proposalId){
+        return proposalDecisionService.downloadApprovalSheet(proposalId);
     }
 }

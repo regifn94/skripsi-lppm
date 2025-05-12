@@ -15,7 +15,7 @@ public class NotificationHelper {
     private final NotificationWebSocketController notificationWebSocketController;
     private final NotificationRepository notificationRepository;
 
-    public void sendNotification(User user, String message, String proposal, Long proposalId) {
+    public void sendNotification(User user, String message, String relatedModel, Long proposalId) {
         try {
             if (user == null) return;
 
@@ -23,7 +23,7 @@ public class NotificationHelper {
                     .user(user)
                     .message(message)
                     .isRead(false)
-                    .relatedModel(proposal)
+                    .relatedModel(relatedModel)
                     .relatedId(proposalId)
                     .createdAt(LocalDateTime.now())
                     .build();
