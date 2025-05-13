@@ -8,4 +8,6 @@ import java.util.List;
 public interface ProposalEvaluationRepository extends JpaRepository<ProposalEvaluation, Long> {
     int countByProposalId(Long proposalId);
     List<ProposalEvaluation> findByReviewerId(Long reviewerId);
+
+    boolean existsByProposalIdAndReviewerId(Long proposalId, Long reviewerId);
 }

@@ -171,6 +171,13 @@ public class ProposalReviewerService {
                     .orElseThrow(() -> new RuntimeException("Proposal tidak ditemukan"));
             User reviewer = userRepository.findById(request.getReviewerId())
                     .orElseThrow(() -> new RuntimeException("Reviewer tidak ditemukan"));
+
+            // ✅ Cek jika reviewer sudah evaluasi proposal ini
+            if (proposalEvaluationRepository.existsByProposalIdAndReviewerId(request.getProposalId(), request.getReviewerId())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Reviewer sudah melakukan evaluasi untuk proposal ini.");
+            }
+
             ProposalEvaluation evaluation = new ProposalEvaluation();
             evaluation.setProposal(proposal);
             evaluation.setReviewer(reviewer);
