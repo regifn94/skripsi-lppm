@@ -20,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -117,9 +120,21 @@ public class ProposalService {
     }
 
     public ResponseEntity<?> findAll(){
-        return ResponseEntity.ok().body(
-                proposalRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
-        );
+        List<Proposal> proposals = proposalRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+
+        for (Proposal proposal : proposals) {
+            if (proposal.getFileUrl() != null) {
+                try {
+                    Path filePath = Paths.get(proposal.getFileUrl());
+                    byte[] fileBytes = Files.readAllBytes(filePath);
+                    String base64 = Base64.getEncoder().encodeToString(fileBytes);
+                    proposal.setFileBase64(base64);
+                } catch (IOException e) {
+                    proposal.setFileBase64("FAILED_TO_READ_FILE");
+                }
+            }
+        }
+        return ResponseEntity.ok().body(proposals);
     }
     public String uploadFile(MultipartFile multipartFile){
         String fileUrl = "";
