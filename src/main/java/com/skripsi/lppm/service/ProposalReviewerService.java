@@ -208,6 +208,7 @@ public class ProposalReviewerService {
             // Hitung jumlah evaluasi yang sudah masuk
             int totalEvaluasi = proposalEvaluationRepository.countByProposalId(proposalId);
 
+            System.out.println("totalReviewer : " + totalReviewer.size() + " || totalEvaluasi : " + totalEvaluasi);
             // Jika jumlah evaluasi sama dengan jumlah reviewer, update status proposal
             if (totalReviewer.size() == totalEvaluasi) {
                 proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
