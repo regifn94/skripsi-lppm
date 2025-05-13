@@ -192,10 +192,14 @@ public class ProposalReviewerService {
                 reviewerRepository.save(proposalReviewer.get());
             }
 
-            var totalReviewer = reviewerRepository.findAllByProposal_IdAndStatus(request.getProposalId(), StatusApproval.ACCEPTED);
+            var proposalId = proposal.getId();
+
+            var proposalEvaluation = proposalEvaluationRepository.save(evaluation);
+
+            var totalReviewer = reviewerRepository.findAllByProposal_IdAndStatus(proposalId, StatusApproval.ACCEPTED);
 
             // Hitung jumlah evaluasi yang sudah masuk
-            int totalEvaluasi = proposalEvaluationRepository.countByProposalId(proposal.getId());
+            int totalEvaluasi = proposalEvaluationRepository.countByProposalId(proposalId);
 
             // Jika jumlah evaluasi sama dengan jumlah reviewer, update status proposal
             if (totalReviewer.size() == totalEvaluasi) {
@@ -203,7 +207,6 @@ public class ProposalReviewerService {
                 proposalRepository.save(proposal);
             }
 
-            var proposalEvaluation = proposalEvaluationRepository.save(evaluation);
             return ResponseEntity.ok(proposalEvaluation);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error " + e.getMessage());
