@@ -11,7 +11,6 @@ public class ProposalDecisionRequest {
 
     private Long decidedByUserId;
 
-    @NotNull(message = "Status must not be null")
     private DecisionStatus status;
 
     private String note;

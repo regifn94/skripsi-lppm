@@ -324,63 +324,75 @@ public class ProposalService {
             proposal.setFileUrl(proposalDTO.getFileUrl());
             proposal.setCreatedBy(ketuaPeneliti);
 
-            Proposal savedProposal = proposalRepository.save(proposal);
-
-            notificationHelper.sendNotification(ketuaPeneliti,
-                    "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
-                    "proposals", savedProposal.getId());
-
+            // Step 3: Cek apakah ada anggota
             List<Long> anggotaDosenIds = proposalDTO.getAnggotaDosen();
             List<Long> anggotaMahasiswaIds = proposalDTO.getAnggotaMahasiswa();
+            boolean noAnggotaDosen = anggotaDosenIds == null || anggotaDosenIds.isEmpty();
+            boolean noAnggotaMahasiswa = anggotaMahasiswaIds == null || anggotaMahasiswaIds.isEmpty();
 
-            boolean hasNoAnggotaDosen = (anggotaDosenIds == null || anggotaDosenIds.isEmpty());
-            boolean hasNoAnggotaMahasiswa = (anggotaMahasiswaIds == null || anggotaMahasiswaIds.isEmpty());
-
-
-            if(hasNoAnggotaDosen && hasNoAnggotaMahasiswa) {
+            if (noAnggotaDosen && noAnggotaMahasiswa) {
                 proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
-            }else {
+            } else {
                 proposal.setStatus(ProposalStatus.WAITING_MEMBER_APPROVAL.toString());
-                List<Dosen> dosenList = dosenRepository.findByIdIn(proposalDTO.getAnggotaDosen());
-                List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
+            }
 
+            // Step 4: Simpan proposal terlebih dahulu
+            Proposal savedProposal = proposalRepository.save(proposal);
+
+            // Step 5: Notifikasi ke ketua peneliti
+            notificationHelper.sendNotification(ketuaPeneliti,
+                    "Proposal baru telah dibuat dengan judul: " + savedProposal.getJudul(),
+                    "proposals", savedProposal.getId());
+
+            // Step 6: Tambahkan anggota jika ada
+            if (!noAnggotaDosen || !noAnggotaMahasiswa) {
                 List<ProposalMember> members = new ArrayList<>();
-                for (Dosen dosen : dosenList) {
-                    if (dosen.getUser() != null) {
-                        ProposalMember member = new ProposalMember();
-                        member.setProposal(savedProposal);
-                        member.setUser(dosen.getUser());
-                        member.setIsMahasiswa(false);
-                        member.setRoleInProposal(RoleInProposal.ANGGOTA_DOSEN);
-                        member.setStatus(StatusApproval.PENDING);
-                        members.add(member);
 
-                        notificationHelper.sendNotification(dosen.getUser(),
-                                "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
-                                "proposals", savedProposal.getId());
+                if (!noAnggotaDosen) {
+                    List<Dosen> dosenList = dosenRepository.findByIdIn(anggotaDosenIds);
+                    for (Dosen dosen : dosenList) {
+                        if (dosen.getUser() != null) {
+                            ProposalMember member = new ProposalMember();
+                            member.setProposal(savedProposal);
+                            member.setUser(dosen.getUser());
+                            member.setIsMahasiswa(false);
+                            member.setRoleInProposal(RoleInProposal.ANGGOTA_DOSEN);
+                            member.setStatus(StatusApproval.PENDING);
+                            members.add(member);
+
+                            notificationHelper.sendNotification(dosen.getUser(),
+                                    "Anda ditambahkan sebagai anggota dosen dalam proposal: " + savedProposal.getJudul(),
+                                    "proposals", savedProposal.getId());
+                        }
                     }
                 }
 
-                for (Students student : studentList) {
-                    if (student.getUser() != null) {
-                        ProposalMember member = new ProposalMember();
-                        member.setProposal(savedProposal);
-                        member.setUser(student.getUser());
-                        member.setIsMahasiswa(true);
-                        member.setRoleInProposal(RoleInProposal.ANGGOTA_MAHASISWA);
-                        member.setStatus(StatusApproval.PENDING);
-                        members.add(member);
+                if (!noAnggotaMahasiswa) {
+                    List<Students> studentList = studentRepository.findAllById(anggotaMahasiswaIds);
+                    for (Students student : studentList) {
+                        if (student.getUser() != null) {
+                            ProposalMember member = new ProposalMember();
+                            member.setProposal(savedProposal);
+                            member.setUser(student.getUser());
+                            member.setIsMahasiswa(true);
+                            member.setRoleInProposal(RoleInProposal.ANGGOTA_MAHASISWA);
+                            member.setStatus(StatusApproval.PENDING);
+                            members.add(member);
 
-                        notificationHelper.sendNotification(student.getUser(),
-                                "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
-                                "proposals", savedProposal.getId());
+                            notificationHelper.sendNotification(student.getUser(),
+                                    "Anda ditambahkan sebagai anggota mahasiswa dalam proposal: " + savedProposal.getJudul(),
+                                    "proposals", savedProposal.getId());
+                        }
                     }
                 }
+
+                // Step 7: Simpan semua member
                 proposalMemberRepository.saveAll(members);
             }
+
             return savedProposal;
-        }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Gagal menyimpan proposal: " + e.getMessage());
         }
     }
 
