@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -123,6 +124,16 @@ public class ProposalService {
         List<Proposal> proposals = proposalRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
 
         for (Proposal proposal : proposals) {
+            // Filter proposalMember: hanya ambil yang tidak REJECTED
+//            if (proposal.getProposalMember() != null) {
+//                proposal.setProposalMember(
+//                        proposal.getProposalMember().stream()
+//                                .filter(member -> member.getStatus() != StatusApproval.REJECTED)
+//                                .collect(Collectors.toList())
+//                );
+//            }
+
+            // Convert file to Base64
             if (proposal.getFileUrl() != null) {
                 try {
                     Path filePath = Paths.get(proposal.getFileUrl());
@@ -134,6 +145,7 @@ public class ProposalService {
                 }
             }
         }
+
         return ResponseEntity.ok().body(proposals);
     }
     public String uploadFile(MultipartFile multipartFile){
@@ -393,10 +405,13 @@ public class ProposalService {
             List<Students> studentList = studentRepository.findAllById(proposalDTO.getAnggotaMahasiswa());
 
             Proposal updatedProposal = proposalRepository.save(proposal);
+
+            // delete semua proposal member
             proposalMemberRepository.deleteAllByProposalId(proposal.getId());
 
             List<ProposalMember> members = new ArrayList<>();
 
+            // add baru
             for (Dosen dosen : dosenList) {
                 if (dosen.getUser() != null) {
                     ProposalMember member = new ProposalMember();

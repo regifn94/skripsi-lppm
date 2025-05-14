@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/proposal-review")
@@ -45,10 +47,11 @@ public class ProposalReviewerController {
     )
     public ResponseEntity<?> rejectedAsReviewer(
             @PathVariable Long proposalId,
-            @PathVariable Long userId,
-            @RequestBody ReviewerRejectedRequest request
+            @PathVariable Long reviewerId,
+            @RequestBody(required = false) ReviewerRejectedRequest request
     ){
-        return proposalReviewerService.rejectedAsReviewer(proposalId, userId, request.getReason());
+        var reason = Objects.isNull(request) ? null : request.getReason();
+        return proposalReviewerService.rejectedAsReviewer(proposalId, reviewerId, reason);
     }
 
     @GetMapping("/{proposalId}/reviewer/{reviewerId}/accept")
