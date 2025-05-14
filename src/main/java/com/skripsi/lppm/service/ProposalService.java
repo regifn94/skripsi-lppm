@@ -134,16 +134,16 @@ public class ProposalService {
 //            }
 
             // Convert file to Base64
-            if (proposal.getFileUrl() != null) {
-                try {
-                    Path filePath = Paths.get(proposal.getFileUrl());
-                    byte[] fileBytes = Files.readAllBytes(filePath);
-                    String base64 = Base64.getEncoder().encodeToString(fileBytes);
-                    proposal.setFileBase64(base64);
-                } catch (IOException e) {
-                    proposal.setFileBase64("FAILED_TO_READ_FILE");
-                }
-            }
+//            if (proposal.getFileUrl() != null) {
+//                try {
+//                    Path filePath = Paths.get(proposal.getFileUrl());
+//                    byte[] fileBytes = Files.readAllBytes(filePath);
+//                    String base64 = Base64.getEncoder().encodeToString(fileBytes);
+//                    proposal.setFileBase64(base64);
+//                } catch (IOException e) {
+//                    proposal.setFileBase64("FAILED_TO_READ_FILE");
+//                }
+//            }
         }
 
         return ResponseEntity.ok().body(proposals);
@@ -376,8 +376,26 @@ public class ProposalService {
     }
 
     public ResponseEntity<?> detail(Long id){
-        var detail = proposalRepository.findById(id);
-        return ResponseEntity.ok().body(detail);
+        try {
+            var proposalOpt = proposalRepository.findById(id);
+            if(proposalOpt.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Proposal Not Found");
+            }
+            var proposal = proposalOpt.get();
+            if (proposal.getFileUrl() != null) {
+                try {
+                    Path filePath = Paths.get(proposal.getFileUrl());
+                    byte[] fileBytes = Files.readAllBytes(filePath);
+                    String base64 = Base64.getEncoder().encodeToString(fileBytes);
+                    proposal.setFileBase64(base64);
+                } catch (IOException e) {
+                    proposal.setFileBase64("FAILED_TO_READ_FILE");
+                }
+            }
+            return ResponseEntity.ok().body(proposal);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     public Object updateProposalWithoutFile(ProposalDTO proposalDTO) {
