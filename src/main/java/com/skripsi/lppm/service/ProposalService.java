@@ -330,7 +330,14 @@ public class ProposalService {
                     "Proposal baru telah dibuat dengan judul: " + proposal.getJudul(),
                     "proposals", savedProposal.getId());
 
-            if(proposalDTO.getAnggotaDosen() == null || proposalDTO.getAnggotaMahasiswa() == null) {
+            List<Long> anggotaDosenIds = proposalDTO.getAnggotaDosen();
+            List<Long> anggotaMahasiswaIds = proposalDTO.getAnggotaMahasiswa();
+
+            boolean hasNoAnggotaDosen = (anggotaDosenIds == null || anggotaDosenIds.isEmpty());
+            boolean hasNoAnggotaMahasiswa = (anggotaMahasiswaIds == null || anggotaMahasiswaIds.isEmpty());
+
+
+            if(hasNoAnggotaDosen && hasNoAnggotaMahasiswa) {
                 proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
             }else {
                 proposal.setStatus(ProposalStatus.WAITING_MEMBER_APPROVAL.toString());
