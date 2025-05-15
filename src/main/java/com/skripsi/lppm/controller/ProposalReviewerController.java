@@ -117,4 +117,9 @@ public class ProposalReviewerController {
     public ResponseEntity<?> downloadApprovalSheet(@PathVariable Long proposalId){
         return proposalDecisionService.downloadApprovalSheet(proposalId);
     }
+
+    @GetMapping("/list-user/{proposalId}")
+    public ResponseEntity<?> getListUser(@PathVariable Long proposalId){
+        return proposalReviewerService.getListUserReview(proposalId);
+    }
 }

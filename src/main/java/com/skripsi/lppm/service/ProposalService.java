@@ -332,6 +332,20 @@ public class ProposalService {
 
             if (noAnggotaDosen && noAnggotaMahasiswa) {
                 proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
+                Long facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
+
+                List<User> facultyResearchCoordinators = userRepository.findByRoleAndFaculty("KETUA_PENELITIAN_FAKULTAS", facultyId);
+
+                if (facultyResearchCoordinators.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Ketua penelitian fakultas belum ada, tolong di assign ketua penelitian fakultas terlebih dahulu");
+                }
+
+                for (User facultyResearchCoordinator : facultyResearchCoordinators) {
+                    notificationHelper.sendNotification(facultyResearchCoordinator,
+                            "Proposal baru dari " + proposal.getKetuaPeneliti().getUsername() + " berjudul: " + proposal.getJudul() + " siap ditinjau.",
+                            "proposals", proposal.getId());
+                    proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.toString());
+                }
             } else {
                 proposal.setStatus(ProposalStatus.WAITING_MEMBER_APPROVAL.toString());
             }

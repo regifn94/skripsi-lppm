@@ -107,7 +107,7 @@ public class ProposalReviewerService {
             Long facultyId = 0L;
             if (proposalOpt.isPresent()) {
                 var proposal = proposalOpt.get();
-                proposal.setStatus(ProposalStatus.REVIEW_COMPLETED.name());
+                proposal.setStatus(ProposalStatus.WAITING_FACULTY_HEAD.name());
                 proposalRepository.save(proposal);
                 facultyId = proposal.getKetuaPeneliti().getDosen().getFaculty().getId();
             }
@@ -360,5 +360,9 @@ public class ProposalReviewerService {
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error : " + e.getMessage());
         }
+    }
+
+    public ResponseEntity<?> getListUserReview(Long proposalId) {
+        return ResponseEntity.status(HttpStatus.OK).body(userRepository.findReviewersByProposalIdAndStatusNotRejectedNative(proposalId));
     }
 }

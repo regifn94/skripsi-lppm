@@ -28,4 +28,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRoleAndFaculty(@Param("roleName") String roleName, @Param("facultyId") Long facultyId);
 
     List<User> findByIdIn(List<Long> id);
+
+    @Query(value = """
+    SELECT u.* 
+    FROM user u 
+    JOIN proposal_reviewer pr ON u.id = pr.reviewer_id 
+    WHERE pr.proposal_id = :proposalId 
+    AND pr.status <> 'REJECTED'
+    """, nativeQuery = true)
+    List<User> findReviewersByProposalIdAndStatusNotRejectedNative(@Param("proposalId") Long proposalId);
+
 }
